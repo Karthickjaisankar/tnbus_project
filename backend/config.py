@@ -24,7 +24,8 @@ TZ_IST = ZoneInfo("Asia/Kolkata")
 ETA_CACHE_TTL_MIN = 60
 
 _env = dotenv_values(ENV_PATH) if ENV_PATH.exists() else {}
-GMAP_API_KEY = _env.get("GMAP_API", "").strip().strip('"')
+# Local: from credentials/.env. Deployed (Railway/etc.): from real env vars.
+GMAP_API_KEY = (_env.get("GMAP_API") or os.getenv("GMAP_API") or "").strip().strip('"')
 
 # Handle Google credentials (local file or Railway environment variable)
 if os.getenv("GOOGLE_CREDENTIALS"):
