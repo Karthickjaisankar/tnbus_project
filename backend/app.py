@@ -1,7 +1,6 @@
 """FastAPI service. Pipeline runs every 5 min in background; endpoints serve cache."""
 from __future__ import annotations
 
-import os
 import threading
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
@@ -144,16 +143,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="TN Bus Inflow Tracker", lifespan=lifespan)
 
-# CORS configuration - allow localhost for dev, and deployed frontend for prod
-allowed_origins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    os.getenv("FRONTEND_URL", "http://localhost:5173"),
-]
-
+# CORS: any *.netlify.app (covers prod + deploy previews) and any localhost port.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.netlify\.app|http://localhost:\d+",
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
