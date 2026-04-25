@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.env
+credentials/.env
+credentials/*.json
+data/*.xlsx
+cache/*.sqlite
+node_modules/
+frontend/dist/
+.DS_Store
