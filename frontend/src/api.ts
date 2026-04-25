@@ -1,8 +1,11 @@
 import { Bus, CorpRow, ForecastHour, Meta } from "./types";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 async function get<T>(path: string): Promise<T> {
-  const r = await fetch(path);
-  if (!r.ok) throw new Error(`${path}: ${r.status}`);
+  const url = `${API_BASE}${path}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url}: ${r.status}`);
   return r.json();
 }
 
@@ -12,8 +15,6 @@ export const api = {
   buses: () => get<{ buses: Bus[]; refreshed_at: string }>("/api/buses"),
   byCorp: () => get<{ by_corp: CorpRow[]; refreshed_at: string }>("/api/by-corporation"),
   refresh: async () => {
-    const r = await fetch("/api/refresh", { method: "POST" });
-    if (!r.ok) throw new Error(`refresh: ${r.status}`);
-    return r.json();
+    const r = await fetch(`${API_BASE}/api/refresh`, { method: "POST" });
   },
 };
