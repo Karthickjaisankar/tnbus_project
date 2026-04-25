@@ -19,9 +19,10 @@ DESTINATION = "Kilambakkam Bus Terminus, Chennai, Tamil Nadu, India"
 
 TZ_IST = ZoneInfo("Asia/Kolkata")
 
-# Cache freshness for traffic-aware ETA. Buses are hours away — minute-level
-# precision isn't needed, and we want to keep API spend low.
-ETA_CACHE_TTL_MIN = 60
+# Force-refresh ETAs on every file change. The pipeline only runs when a new
+# xlsx arrives in Drive (file-change gating in app.py), so API calls happen
+# at the same cadence as uploads — currently every 30 min.
+ETA_CACHE_TTL_MIN = 0
 
 _env = dotenv_values(ENV_PATH) if ENV_PATH.exists() else {}
 # Local: from credentials/.env. Deployed (Railway/etc.): from real env vars.

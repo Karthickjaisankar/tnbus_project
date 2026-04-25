@@ -18,6 +18,11 @@ from .forecast import attach_arrival, by_corporation, hourly_forecast
 from .geocode import get_geocodes
 from .parser import load_snapshot
 
+# Track the last file we actually processed. Subsequent scheduler ticks short-
+# circuit if the filename hasn't changed — avoids re-calling Google APIs every
+# 5 min when files only land every 30 min.
+_LAST_FILENAME: str | None = None
+
 # In-memory state, refreshed on schedule
 _STATE: dict[str, Any] = {
     "snapshot_ts": None,
@@ -32,13 +37,24 @@ _STATE: dict[str, Any] = {
 _LOCK = threading.Lock()
 
 
-def refresh_pipeline() -> None:
-    """Pull -> parse -> ETA -> geocode -> bucket. Mutates _STATE atomically."""
-    print(f"[refresh] starting at {datetime.now(TZ_IST).isoformat(timespec='seconds')}")
+def refresh_pipeline(force: bool = False) -> None:
+    """Pull -> parse -> ETA -> geocode -> bucket. Mutates _STATE atomically.
+
+    When force=False (the scheduler default), skip the pipeline if the latest
+    file in Drive matches the one we already processed — prevents repeat API
+    calls between 30-min file uploads. The /api/refresh endpoint passes
+    force=True so a user-initiated refresh always re-runs.
+    """
+    global _LAST_FILENAME
+    print(f"[refresh] starting at {datetime.now(TZ_IST).isoformat(timespec='seconds')} (force={force})")
     try:
         path = sync_latest()
         if path is None:
             raise RuntimeError("no source file in Drive")
+
+        if not force and path.name == _LAST_FILENAME:
+            print(f"[refresh] no new file ({path.name}), skipping")
+            return
 
         df, snapshot_ts = load_snapshot(path)
         places = df["EFFECTIVE_PLACE"].unique().tolist()
@@ -122,6 +138,7 @@ def refresh_pipeline() -> None:
                 },
                 "error": None,
             })
+        _LAST_FILENAME = path.name
         print(f"[refresh] done: {len(buses)} buses, {w1} arriving in 1h carrying {p1} pax")
     except Exception as e:
         print(f"[refresh] FAILED: {e}")
@@ -190,7 +207,7 @@ def cost():
 @app.post("/api/refresh")
 def force_refresh():
     """Manual trigger for the pipeline (e.g., 'Refresh now' button)."""
-    refresh_pipeline()
+    refresh_pipeline(force=True)
     with _LOCK:
         if _STATE["error"]:
             raise HTTPException(500, _STATE["error"])
