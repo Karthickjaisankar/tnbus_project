@@ -20,12 +20,13 @@ from .config import CACHE_DIR, TZ_IST
 
 CSV_PATH = CACHE_DIR / "api_costs.csv"
 
-# EDIT THESE to match your actual Google Maps Platform pricing.
-# free_per_month: monthly element/request count covered by Google's free tier
-# rate_per_1000:  USD cost per 1000 elements above the free tier
+# India-region Google Maps Platform free tiers (verified by user):
+#   - Distance Matrix Advanced (Traffic ETA, Pro SKU): 35,000 requests/month
+#   - Geocoding (Essentials):                          70,000 requests/month
+# Per-1000 rates above the free tier — verify on your Cloud Billing dashboard.
 PRICING = {
-    "distance_matrix": {"rate_per_1000_usd": 5.00, "free_per_month": 10_000},
-    "geocoding":       {"rate_per_1000_usd": 5.00, "free_per_month": 10_000},
+    "distance_matrix": {"rate_per_1000_usd": 5.00, "free_per_month": 35_000},
+    "geocoding":       {"rate_per_1000_usd": 5.00, "free_per_month": 70_000},
 }
 
 USD_TO_INR = 84.0     # placeholder — update or pull from FX feed if you want INR figures
