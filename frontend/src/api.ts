@@ -15,6 +15,9 @@ export const api = {
   buses: () => get<{ buses: Bus[]; refreshed_at: string }>("/api/buses"),
   byCorp: () => get<{ by_corp: CorpRow[]; refreshed_at: string }>("/api/by-corporation"),
   refresh: async () => {
-    const r = await fetch(`${API_BASE}/api/refresh`, { method: "POST" });
+    const url = `${API_BASE}/api/refresh`;
+    const r = await fetch(url, { method: "POST" });
+    if (!r.ok) throw new Error(`${url}: ${r.status}`);
+    return r.json();
   },
 };
