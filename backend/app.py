@@ -10,11 +10,24 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import TZ_IST
+from .config import (
+    BUNCHING_THRESHOLD_BUSES,
+    BUNCHING_WINDOW_MIN,
+    FORECAST_BUCKET_MIN,
+    FORECAST_HORIZON_HOURS,
+    STALE_DATA_THRESHOLD_MIN,
+    TZ_IST,
+)
 from .cost_tracker import monthly_summary
 from .drive_sync import sync_latest
 from .eta import get_etas
-from .forecast import attach_arrival, by_corporation, hourly_forecast
+from .forecast import (
+    arrival_forecast,
+    attach_arrival,
+    by_corporation,
+    detect_bunching,
+    find_peak_window,
+)
 from .geocode import get_geocodes
 from .parser import load_snapshot
 
@@ -31,7 +44,15 @@ _STATE: dict[str, Any] = {
     "buses": [],            # list of dicts (one per in-flight bus)
     "forecast": [],         # list of {hour, buses, passengers}
     "by_corp": [],
-    "totals": {"buses": 0, "passengers": 0, "next_1h": 0, "next_3h": 0},
+    "totals": {
+        "buses": 0, "passengers": 0,
+        "next_30min": 0, "passengers_30min": 0,
+        "next_1h": 0, "passengers_1h": 0,
+        "next_5h": 0, "passengers_5h": 0,
+    },
+    "peak_window": None,
+    "bunching_alert": None,
+    "is_stale": False,
     "error": None,
 }
 _LOCK = threading.Lock()
@@ -64,11 +85,16 @@ def refresh_pipeline(force: bool = False) -> None:
 
         # TEST ONLY: Shift all dates forward by 1 day to match "today"
         df["ARRIVAL_DT"] = df["ARRIVAL_DT"] + timedelta(days=1)
-        
+
         # For testing: use snapshot time + 12 hours (simulates buses being current)
         # For production: use datetime.now(TZ_IST)
         now = snapshot_ts + timedelta(hours=12)
-        fc = hourly_forecast(df, ref_time=now, hours=5)
+        fc = arrival_forecast(
+            df,
+            ref_time=now,
+            hours=FORECAST_HORIZON_HOURS,
+            bucket_minutes=FORECAST_BUCKET_MIN,
+        )
         by_c = by_corporation(df)
 
         # Per-bus payload for map + table
@@ -99,11 +125,19 @@ def refresh_pipeline(force: bool = False) -> None:
             in_w = [b for b in buses if 0 <= b["mins_to_arrive"] <= mins_max]
             return len(in_w), sum(b["passengers"] for b in in_w)
 
+        w30, p30 = in_window(30)
         w1, p1 = in_window(60)
-        w2, p2 = in_window(120)
-        w3, p3 = in_window(180)
-        w4, p4 = in_window(240)
-        w5, p5 = in_window(300)
+        w5, p5 = in_window(FORECAST_HORIZON_HOURS * 60)
+
+        peak = find_peak_window(fc)
+        bunching = detect_bunching(
+            buses,
+            ref_time=now,
+            hours=FORECAST_HORIZON_HOURS,
+            window_minutes=BUNCHING_WINDOW_MIN,
+            threshold_buses=BUNCHING_THRESHOLD_BUSES,
+        )
+        is_stale = (now - snapshot_ts).total_seconds() / 60 > STALE_DATA_THRESHOLD_MIN
 
         with _LOCK:
             _STATE.update({
@@ -116,6 +150,7 @@ def refresh_pipeline(force: bool = False) -> None:
                         "hour": r["BUCKET_START"].isoformat(),
                         "buses": int(r["buses"]),
                         "passengers": int(r["passengers"]),
+                        "city_buses_needed": int(r["city_buses_needed"]),
                     }
                     for _, r in fc.iterrows()
                 ],
@@ -130,16 +165,18 @@ def refresh_pipeline(force: bool = False) -> None:
                 "totals": {
                     "buses": len(buses),
                     "passengers": int(df["PASSENGERS_COUNT"].sum()),
+                    "next_30min": w30, "passengers_30min": p30,
                     "next_1h": w1, "passengers_1h": p1,
-                    "next_2h": w2, "passengers_2h": p2,
-                    "next_3h": w3, "passengers_3h": p3,
-                    "next_4h": w4, "passengers_4h": p4,
                     "next_5h": w5, "passengers_5h": p5,
                 },
+                "peak_window": peak,
+                "bunching_alert": bunching,
+                "is_stale": is_stale,
                 "error": None,
             })
         _LAST_FILENAME = path.name
-        print(f"[refresh] done: {len(buses)} buses, {w1} arriving in 1h carrying {p1} pax")
+        bunch_msg = f" BUNCHING: {bunching['buses']} buses in 15min" if bunching else ""
+        print(f"[refresh] done: {len(buses)} buses, {w30} in 30min, {w1} in 1h ({p1} pax){bunch_msg}")
     except Exception as e:
         print(f"[refresh] FAILED: {e}")
         with _LOCK:
@@ -177,6 +214,9 @@ def meta():
             "filename": _STATE["filename"],
             "refreshed_at": _STATE["refreshed_at"],
             "totals": _STATE["totals"],
+            "peak_window": _STATE["peak_window"],
+            "bunching_alert": _STATE["bunching_alert"],
+            "is_stale": _STATE["is_stale"],
             "error": _STATE["error"],
         }
 

@@ -1,11 +1,12 @@
-"""Bucket buses into the next 10 hourly arrival bins."""
+"""Bucketed arrival forecast + bunching / peak detection."""
 from __future__ import annotations
 
+import math
 from datetime import datetime, timedelta
 
 import pandas as pd
 
-from .config import TZ_IST
+from .config import CITY_BUS_CAPACITY, TZ_IST
 
 
 def attach_arrival(df: pd.DataFrame, etas: dict[str, dict]) -> pd.DataFrame:
@@ -25,17 +26,22 @@ def attach_arrival(df: pd.DataFrame, etas: dict[str, dict]) -> pd.DataFrame:
     return df
 
 
-def hourly_forecast(
-    df: pd.DataFrame, ref_time: datetime | None = None, hours: int = 10
+def arrival_forecast(
+    df: pd.DataFrame,
+    ref_time: datetime | None = None,
+    hours: int = 5,
+    bucket_minutes: int = 30,
 ) -> pd.DataFrame:
-    """Hourly bins starting at ref_time (default: now IST, floored to hour).
+    """Bucketed arrivals from ref_time forward.
 
-    Buses whose ARRIVAL_DT lies before the first bin are reported as
-    'already_arrived' (separate count returned via meta if needed).
+    Returns DataFrame columns: BUCKET_START, buses, passengers, city_buses_needed.
+    `city_buses_needed = ceil(passengers / CITY_BUS_CAPACITY)`.
     """
     ref = ref_time or datetime.now(TZ_IST)
-    start = ref.replace(minute=0, second=0, microsecond=0)
-    bins = [start + timedelta(hours=i) for i in range(hours + 1)]
+    minute_floor = (ref.minute // bucket_minutes) * bucket_minutes
+    start = ref.replace(minute=minute_floor, second=0, microsecond=0)
+    n_buckets = int(hours * 60 / bucket_minutes)
+    bins = [start + timedelta(minutes=i * bucket_minutes) for i in range(n_buckets + 1)]
 
     df = df.copy()
     df["ARRIVAL_DT"] = pd.to_datetime(df["ARRIVAL_DT"], utc=True).dt.tz_convert(TZ_IST)
@@ -57,11 +63,76 @@ def hourly_forecast(
     out = full.merge(grouped, on="BUCKET_START", how="left").fillna({"buses": 0, "passengers": 0})
     out["buses"] = out["buses"].astype(int)
     out["passengers"] = out["passengers"].astype(int)
+    out["city_buses_needed"] = out["passengers"].map(
+        lambda p: math.ceil(p / CITY_BUS_CAPACITY) if p > 0 else 0
+    )
     return out
 
 
+def find_peak_window(forecast: pd.DataFrame) -> dict | None:
+    """The single bucket carrying the most passengers in the forecast."""
+    if forecast.empty or forecast["passengers"].sum() == 0:
+        return None
+    peak = forecast.loc[forecast["passengers"].idxmax()]
+    return {
+        "start": peak["BUCKET_START"].isoformat(),
+        "buses": int(peak["buses"]),
+        "passengers": int(peak["passengers"]),
+        "city_buses_needed": int(peak["city_buses_needed"]),
+    }
+
+
+def detect_bunching(
+    buses: list[dict],
+    ref_time: datetime,
+    hours: int,
+    window_minutes: int,
+    threshold_buses: int,
+) -> dict | None:
+    """Return the worst sliding window if it crosses the threshold, else None.
+
+    A "bunching" event = many buses arriving close together (in the same
+    window_minutes span). MTC needs to know this so they can pre-stage extra
+    city buses.
+    """
+    horizon_end_min = hours * 60
+    items = sorted(
+        [
+            (datetime.fromisoformat(b["arrival_dt"]), b["passengers"])
+            for b in buses
+            if 0 <= b["mins_to_arrive"] <= horizon_end_min
+        ],
+        key=lambda x: x[0],
+    )
+    if not items:
+        return None
+
+    n = len(items)
+    best = None
+    for i in range(n):
+        end = items[i][0] + timedelta(minutes=window_minutes)
+        j = i
+        pax = 0
+        while j < n and items[j][0] < end:
+            pax += items[j][1]
+            j += 1
+        count = j - i
+        if best is None or count > best["buses"]:
+            best = {
+                "start": items[i][0].isoformat(),
+                "end": end.isoformat(),
+                "buses": count,
+                "passengers": pax,
+                "city_buses_needed": math.ceil(pax / CITY_BUS_CAPACITY) if pax else 0,
+            }
+        if items[i][0] >= ref_time + timedelta(minutes=horizon_end_min):
+            break
+
+    return best if best and best["buses"] >= threshold_buses else None
+
+
 def by_corporation(df: pd.DataFrame) -> pd.DataFrame:
-    """Counts grouped by source corporation (district stand-in for v1)."""
+    """Counts grouped by source corporation."""
     return (
         df.groupby("CORPORATION")
         .agg(buses=("WAYBILLNO", "count"), passengers=("PASSENGERS_COUNT", "sum"))

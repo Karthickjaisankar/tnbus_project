@@ -20,6 +20,22 @@ export interface ForecastHour {
   hour: string;
   buses: number;
   passengers: number;
+  city_buses_needed: number;
+}
+
+export interface PeakWindow {
+  start: string;
+  buses: number;
+  passengers: number;
+  city_buses_needed: number;
+}
+
+export interface BunchingAlert {
+  start: string;
+  end: string;
+  buses: number;
+  passengers: number;
+  city_buses_needed: number;
 }
 
 export interface CorpRow {
@@ -35,11 +51,12 @@ export interface Meta {
   totals: {
     buses: number;
     passengers: number;
+    next_30min: number; passengers_30min: number;
     next_1h: number; passengers_1h: number;
-    next_2h: number; passengers_2h: number;
-    next_3h: number; passengers_3h: number;
-    next_4h: number; passengers_4h: number;
     next_5h: number; passengers_5h: number;
   };
+  peak_window: PeakWindow | null;
+  bunching_alert: BunchingAlert | null;
+  is_stale: boolean;
   error: string | null;
 }

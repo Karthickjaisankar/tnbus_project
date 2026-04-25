@@ -24,6 +24,14 @@ TZ_IST = ZoneInfo("Asia/Kolkata")
 # at the same cadence as uploads — currently every 30 min.
 ETA_CACHE_TTL_MIN = 0
 
+# Operational planning constants
+CITY_BUS_CAPACITY = 50            # avg seats per MTC city bus → drives "buses needed"
+FORECAST_BUCKET_MIN = 30          # forecast bin size (30-min for dispatch decisions)
+FORECAST_HORIZON_HOURS = 5        # planning window
+BUNCHING_WINDOW_MIN = 15          # sliding window width for bunching detection
+BUNCHING_THRESHOLD_BUSES = 15     # alert if >=N buses arrive within the window
+STALE_DATA_THRESHOLD_MIN = 40     # warn if no new file for >40 min during ops hours
+
 _env = dotenv_values(ENV_PATH) if ENV_PATH.exists() else {}
 # Local: from credentials/.env. Deployed (Railway/etc.): from real env vars.
 GMAP_API_KEY = (_env.get("GMAP_API") or os.getenv("GMAP_API") or "").strip().strip('"')
