@@ -1,4 +1,6 @@
 """Shared paths, constants, and env loading."""
+import json
+import os
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -24,5 +26,13 @@ ETA_CACHE_TTL_MIN = 60
 _env = dotenv_values(ENV_PATH) if ENV_PATH.exists() else {}
 GMAP_API_KEY = _env.get("GMAP_API", "").strip().strip('"')
 
+# Handle Google credentials (local file or Railway environment variable)
+if os.getenv("GOOGLE_CREDENTIALS"):
+    # Railway: load from environment variable
+    creds_json = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
+    # Write to temp location for google-auth to read
+    SERVICE_ACCOUNT_JSON.parent.mkdir(exist_ok=True)
+    with open(SERVICE_ACCOUNT_JSON, "w") as f:
+        json.dump(creds_json, f)
 CACHE_DIR.mkdir(exist_ok=True)
 DATA_DIR.mkdir(exist_ok=True)
