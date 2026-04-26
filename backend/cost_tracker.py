@@ -55,8 +55,7 @@ def log_call(api: str, billed: int, cached: int, trigger: str = "auto") -> None:
 
 def monthly_summary() -> dict:
     """Aggregate the CSV for the current calendar month + cost estimate."""
-    # now = datetime.now(TZ_IST)
-    now = datetime.now(TZ_IST).replace(day=datetime.now(TZ_IST).day - 1, hour=21, minute=0, second=0)
+    now = datetime.now(TZ_IST)
     month = now.strftime("%Y-%m")
     by_api: dict[str, dict] = {}
     if CSV_PATH.exists():

@@ -65,6 +65,10 @@ def load_snapshot(path: Path | None = None) -> tuple[pd.DataFrame, datetime]:
 
     df = pd.read_excel(path)
     df.columns = [c.strip() for c in df.columns]
+    # Live files renamed PASSENGERS_COUNT -> TOTAL_PASSENGERS. Accept either,
+    # normalise to PASSENGERS_COUNT so the rest of the pipeline stays stable.
+    if "TOTAL_PASSENGERS" in df.columns and "PASSENGERS_COUNT" not in df.columns:
+        df = df.rename(columns={"TOTAL_PASSENGERS": "PASSENGERS_COUNT"})
     for c in df.select_dtypes(include="object").columns:
         df[c] = df[c].astype(str).str.strip()
 

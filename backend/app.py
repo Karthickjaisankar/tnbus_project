@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import threading
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -83,12 +83,7 @@ def refresh_pipeline(force: bool = False) -> None:
         geos = get_geocodes(places)
         df = attach_arrival(df, etas)
 
-        # TEST ONLY: Shift all dates forward by 1 day to match "today"
-        df["ARRIVAL_DT"] = df["ARRIVAL_DT"] + timedelta(days=1)
-
-        # For testing: use snapshot time + 12 hours (simulates buses being current)
-        # For production: use datetime.now(TZ_IST)
-        now = snapshot_ts + timedelta(hours=12)
+        now = datetime.now(TZ_IST)
         fc = arrival_forecast(
             df,
             ref_time=now,
