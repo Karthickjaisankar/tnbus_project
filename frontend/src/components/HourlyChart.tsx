@@ -38,7 +38,7 @@ function HourTick(props: any) {
       </text>
       {item && (
         <text x={0} y={0} dy={30} textAnchor="middle" fill="#7c3aed" fontSize={10.5} fontWeight={600}>
-          {item.buses} inbound
+          {item.buses} inbound buses
         </text>
       )}
     </g>

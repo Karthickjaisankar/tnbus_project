@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { Bus } from "../types";
 
@@ -13,10 +13,11 @@ const ETA_BUCKETS = [
 type EtaBucket = (typeof ETA_BUCKETS)[number]["value"];
 
 function bucket(mins: number) {
-  if (mins < 60) return { color: "#e11d48", bg: "#fff1f2", border: "#fda4af", label: "<1h" };
-  if (mins < 180) return { color: "#ea580c", bg: "#fff7ed", border: "#fed7aa", label: "1–3h" };
-  if (mins < 360) return { color: "#d97706", bg: "#fffbeb", border: "#fde68a", label: "3–6h" };
-  return { color: "#0891b2", bg: "#ecfeff", border: "#a5f3fc", label: "6h+" };
+  if (mins < 0) return { color: "#475569", bg: "#f1f5f9", border: "#cbd5e1", label: "arrived" };
+  if (mins < 60) return { color: "#dc2626", bg: "#fef2f2", border: "#fecaca", label: "<1h" };
+  if (mins < 180) return { color: "#d97706", bg: "#fffbeb", border: "#fde68a", label: "1–3h" };
+  if (mins < 360) return { color: "#a16207", bg: "#fefce8", border: "#fde047", label: "3–6h" };
+  return { color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", label: ">6h" };
 }
 
 function inEtaBucket(mins: number, b: EtaBucket): boolean {
@@ -54,6 +55,16 @@ export function BusTable({ buses }: { buses: Bus[] }) {
       ["ALL", ...Array.from(new Set(buses.map((b) => b.last_place).filter(Boolean))).sort()],
     [buses]
   );
+
+  // If a filter's selected value disappears from the new dataset (e.g. file
+  // refresh dropped that origin), reset to "ALL" so the table doesn't end up
+  // empty with a stale filter the user can no longer see in the dropdown.
+  useEffect(() => {
+    if (from !== "ALL" && !fromPlaces.includes(from)) setFrom("ALL");
+  }, [fromPlaces, from]);
+  useEffect(() => {
+    if (lastSeen !== "ALL" && !lastPlaces.includes(lastSeen)) setLastSeen("ALL");
+  }, [lastPlaces, lastSeen]);
 
   const rows = useMemo(() => {
     const ql = q.toLowerCase();

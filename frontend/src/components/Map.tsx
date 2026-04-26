@@ -7,12 +7,15 @@ import { Bus } from "../types";
 
 const KILAMBAKKAM: [number, number] = [12.7782, 80.0686];
 
-// Color buckets by ETA — light-theme palette (darker variants)
+// Color buckets by ETA — red <1h, amber 1–3h, yellow 3–6h, green >6h.
+// Negative ETAs (already arrived) get a neutral gray so they don't pollute
+// the urgency signal.
 function bucket(mins: number): { color: string; label: string } {
-  if (mins < 60) return { color: "#e11d48", label: "<1h" };
-  if (mins < 180) return { color: "#ea580c", label: "1–3h" };
-  if (mins < 360) return { color: "#d97706", label: "3–6h" };
-  return { color: "#0891b2", label: "6h+" };
+  if (mins < 0) return { color: "#94a3b8", label: "arrived" };
+  if (mins < 60) return { color: "#dc2626", label: "<1h" };
+  if (mins < 180) return { color: "#f59e0b", label: "1–3h" };
+  if (mins < 360) return { color: "#eab308", label: "3–6h" };
+  return { color: "#16a34a", label: ">6h" };
 }
 
 function busDivIcon(b: Bus): L.DivIcon {
@@ -105,14 +108,15 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
         iconCreateFunction: (c: any) => {
           const n = c.getChildCount();
           const children = c.getAllChildMarkers();
-          // Color by the SOONEST-arriving bus in the cluster — if any bus is
-          // close to Kilambakkam, the whole cluster lights up red.
+          // Color by the SOONEST inbound bus (mins_to_arrive >= 0). Already-
+          // arrived buses are excluded from the urgency calc — they would
+          // otherwise turn every cluster red, since their ETAs are < 0.
           let minMins = Infinity;
           for (const m of children) {
             const v = (m.options as any).busMinsToArrive;
-            if (typeof v === "number" && v < minMins) minMins = v;
+            if (typeof v === "number" && v >= 0 && v < minMins) minMins = v;
           }
-          const { color } = bucket(minMins);
+          const color = minMins === Infinity ? "#94a3b8" : bucket(minMins).color;
           const size = n >= 50 ? 56 : n >= 15 ? 46 : 38;
           return L.divIcon({
             html: `<div class="cluster-pulse" style="width:${size}px;height:${size}px;background:${color}">${n}</div>`,
@@ -214,10 +218,10 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
           <span className="hidden sm:inline"> to Kilambakkam</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 text-slate-600">
-          <Dot color="#e11d48" /> &lt;1h
-          <Dot color="#ea580c" /> 1–3h
-          <Dot color="#d97706" /> 3–6h
-          <Dot color="#0891b2" /> 6h+
+          <Dot color="#dc2626" /> &lt;1h
+          <Dot color="#f59e0b" /> 1–3h
+          <Dot color="#eab308" /> 3–6h
+          <Dot color="#16a34a" /> &gt;6h
         </div>
       </div>
     </div>
