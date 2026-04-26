@@ -1,7 +1,7 @@
-import { BellRing, Bus as BusIcon, Clock5, Flame, Users, Zap } from "lucide-react";
-import { Meta } from "../types";
+import { BellRing, Bus as BusIcon, Building2, Clock5, Flame, Users, Zap } from "lucide-react";
+import { CorpBreakdown, Meta } from "../types";
 
-const CAPACITY = 60;
+const CAPACITY = 75;
 const BUFFER_RATIO = 1.2; // 20% operational buffer over the raw base
 const MAX_BUS_PILLS = 18;
 
@@ -95,11 +95,33 @@ interface TileProps {
   hoursLabel: string;
   buses: number;
   passengers: number;
+  byCorp: CorpBreakdown[];
   icon: React.ReactNode;
   variant: keyof typeof VARIANTS;
 }
 
-function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
+function CorpChips({ items, accent }: { items: CorpBreakdown[]; accent: string }) {
+  if (!items || items.length === 0) {
+    return <span className="text-[10px] text-slate-400 italic">no buses yet</span>;
+  }
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {items.map((it) => (
+        <span
+          key={it.corp}
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/80 border text-[10px] font-mono"
+          style={{ borderColor: `${accent}55`, color: accent }}
+          title={`${it.buses} bus${it.buses === 1 ? "" : "es"} from ${it.corp}`}
+        >
+          <span className="font-bold">{it.buses}</span>
+          <span className="text-slate-700 font-semibold">{it.corp}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Tile({ hoursLabel, buses, passengers, byCorp, icon, variant }: TileProps) {
   const v = VARIANTS[variant];
   const baseBuses = Math.ceil(passengers / CAPACITY);
   const cityBuses = minMTCBuses(passengers);
@@ -151,6 +173,17 @@ function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
         </div>
       </div>
 
+      {/* Corporation breakdown */}
+      <div className="relative mb-2 min-w-0">
+        <div className="flex items-center gap-1.5 mb-1">
+          <Building2 className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+          <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+            By corporation
+          </span>
+        </div>
+        <CorpChips items={byCorp} accent={v.accent} />
+      </div>
+
       {/* Passengers expected row */}
       <div className="relative flex items-center gap-2 mb-3 min-w-0 flex-wrap">
         <Users className="w-4 h-4 text-slate-500 flex-shrink-0" />
@@ -175,7 +208,7 @@ function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
         </div>
         <MTCBusPills count={cityBuses} color={v.accent} />
         <div className="text-[10px] text-slate-500 mt-1.5 leading-snug">
-          {passengers.toLocaleString("en-IN")} expected ÷ 60 seats = {baseBuses} base · +20% buffer ={" "}
+          {passengers.toLocaleString("en-IN")} expected ÷ 75 seats = {baseBuses} base · +20% buffer ={" "}
           <span className="font-mono font-bold" style={{ color: v.accent }}>
             min {cityBuses}
           </span>
@@ -205,6 +238,7 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
         hoursLabel="Next 1 hour"
         buses={t.next_1h}
         passengers={t.passengers_1h}
+        byCorp={t.by_corp_1h}
         icon={<Zap className="w-5 h-5" />}
         variant="alarmRed"
       />
@@ -212,6 +246,7 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
         hoursLabel="Next 2 hours"
         buses={t.next_2h}
         passengers={t.passengers_2h}
+        byCorp={t.by_corp_2h}
         icon={<Flame className="w-5 h-5" />}
         variant="warnOrange"
       />
@@ -219,6 +254,7 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
         hoursLabel="Next 5 hours"
         buses={t.next_5h}
         passengers={t.passengers_5h}
+        byCorp={t.by_corp_5h}
         icon={<Clock5 className="w-5 h-5" />}
         variant="calmCyan"
       />

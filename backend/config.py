@@ -25,8 +25,14 @@ TZ_IST = ZoneInfo("Asia/Kolkata")
 ETA_CACHE_TTL_MIN = 0
 
 # Operational planning constants
-CITY_BUS_CAPACITY = 60            # avg seats per MTC city bus → drives "buses needed"
+CITY_BUS_CAPACITY = 75            # avg seats per MTC city bus → drives "buses needed"
 CITY_BUS_BUFFER_RATIO = 1.2       # 20% extra over the raw base, so 10 base -> 12 min recommended
+
+# Per-bus passenger ESTIMATE (replaces TOTAL_PASSENGERS column, which under-
+# counts because online bookings aren't in the ticketing data).
+PASSENGERS_PER_BUS_SETC = 45      # SETC = State Express Transport (long-haul)
+PASSENGERS_PER_BUS_OTHER = 65     # everything else (KUMBAKONAM, VILLUPURAM, etc.)
+
 FORECAST_BUCKET_MIN = 60          # forecast bin size (1-hour for chart)
 FORECAST_HORIZON_HOURS = 5        # planning window
 BUNCHING_WINDOW_MIN = 15          # sliding window width for bunching detection (computed but UI-hidden)

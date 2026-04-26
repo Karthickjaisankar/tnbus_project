@@ -84,8 +84,8 @@ export function BusTable({ buses }: { buses: Bus[] }) {
   }, [buses, q, from, lastSeen, eta]);
 
   const totalPax = useMemo(() => rows.reduce((s, b) => s + b.passengers, 0), [rows]);
-  // 20% operational buffer over base (matches backend mtc_buses_required).
-  const cityBuses = totalPax > 0 ? Math.ceil(Math.ceil(totalPax / 60) * 1.2) : 0;
+  // 20% operational buffer over base (matches backend mtc_buses_required, 75-seat MTC bus).
+  const cityBuses = totalPax > 0 ? Math.ceil(Math.ceil(totalPax / 75) * 1.2) : 0;
 
   const anyFilter = q !== "" || from !== "ALL" || lastSeen !== "ALL" || eta !== "ALL";
   const clearAll = () => {

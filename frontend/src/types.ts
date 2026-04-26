@@ -38,6 +38,11 @@ export interface BunchingAlert {
   city_buses_needed: number;
 }
 
+export interface CorpBreakdown {
+  corp: string;
+  buses: number;
+}
+
 export interface ApproachTraffic {
   origin: string;
   destination: string;
@@ -66,6 +71,9 @@ export interface Meta {
     next_3h: number; passengers_3h: number;
     next_4h: number; passengers_4h: number;
     next_5h: number; passengers_5h: number;
+    by_corp_1h: CorpBreakdown[];
+    by_corp_2h: CorpBreakdown[];
+    by_corp_5h: CorpBreakdown[];
   };
   peak_window: PeakWindow | null;
   bunching_alert: BunchingAlert | null;

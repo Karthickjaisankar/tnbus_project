@@ -10,14 +10,28 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from collections import Counter
+
 from .config import (
     BUNCHING_THRESHOLD_BUSES,
     BUNCHING_WINDOW_MIN,
     FORECAST_BUCKET_MIN,
     FORECAST_HORIZON_HOURS,
+    PASSENGERS_PER_BUS_OTHER,
+    PASSENGERS_PER_BUS_SETC,
     STALE_DATA_THRESHOLD_MIN,
     TZ_IST,
 )
+
+
+def _passengers_for(corp: str) -> int:
+    """Per-bus passenger estimate based on corporation. Replaces the
+    under-reported TOTAL_PASSENGERS column from the source xlsx."""
+    return (
+        PASSENGERS_PER_BUS_SETC
+        if str(corp).strip().upper() == "SETC"
+        else PASSENGERS_PER_BUS_OTHER
+    )
 from .cost_tracker import monthly_summary
 from .drive_sync import sync_latest
 from .eta import get_etas
@@ -52,6 +66,7 @@ _STATE: dict[str, Any] = {
         "next_3h": 0, "passengers_3h": 0,
         "next_4h": 0, "passengers_4h": 0,
         "next_5h": 0, "passengers_5h": 0,
+        "by_corp_1h": [], "by_corp_2h": [], "by_corp_5h": [],
     },
     "peak_window": None,
     "bunching_alert": None,
@@ -85,6 +100,11 @@ def refresh_pipeline(force: bool = False) -> None:
         places = df["EFFECTIVE_PLACE"].unique().tolist()
         etas = get_etas(places)
         geos = get_geocodes(places)
+
+        # Replace TOTAL_PASSENGERS / PASSENGERS_COUNT with the corp-based
+        # estimate. Online bookings aren't in the source data, so a flat
+        # per-bus count gives MTC a more realistic planning number.
+        df["PASSENGERS_COUNT"] = df["CORPORATION"].apply(_passengers_for)
 
         now = datetime.now(TZ_IST)
         df = attach_arrival(df, etas, ref_time=now)
@@ -124,6 +144,14 @@ def refresh_pipeline(force: bool = False) -> None:
         def in_window(mins_max: float) -> tuple[int, int]:
             in_w = [b for b in buses if 0 <= b["mins_to_arrive"] <= mins_max]
             return len(in_w), sum(b["passengers"] for b in in_w)
+
+        def by_corp_in_window(mins_max: float) -> list[dict]:
+            counts = Counter(
+                str(b["corporation"]).strip()
+                for b in buses
+                if 0 <= b["mins_to_arrive"] <= mins_max
+            )
+            return [{"corp": c, "buses": n} for c, n in counts.most_common()]
 
         w1, p1 = in_window(60)
         w2, p2 = in_window(120)
@@ -173,6 +201,9 @@ def refresh_pipeline(force: bool = False) -> None:
                     "next_3h": w3, "passengers_3h": p3,
                     "next_4h": w4, "passengers_4h": p4,
                     "next_5h": w5, "passengers_5h": p5,
+                    "by_corp_1h": by_corp_in_window(60),
+                    "by_corp_2h": by_corp_in_window(120),
+                    "by_corp_5h": by_corp_in_window(FORECAST_HORIZON_HOURS * 60),
                 },
                 "peak_window": peak,
                 "bunching_alert": bunching,

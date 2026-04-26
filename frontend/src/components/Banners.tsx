@@ -1,5 +1,19 @@
-import { AlertTriangle, BellRing, Clock } from "lucide-react";
+import { AlertTriangle, BellRing, Clock, Info } from "lucide-react";
 import { BunchingAlert, Meta } from "../types";
+
+export function FormulaNoticeBanner() {
+  return (
+    <div className="rounded-xl border border-sky-200 bg-sky-50 p-2.5 sm:p-3 flex items-start gap-2.5 sm:gap-3 shadow-card min-w-0 w-full">
+      <Info className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 flex-shrink-0 mt-0.5" />
+      <div className="text-[12px] sm:text-sm text-sky-900 leading-snug min-w-0">
+        <span className="font-semibold">Passengers booked online are not counted.</span>{" "}
+        Counts shown are estimates: <span className="font-mono font-semibold">SETC × 45</span>{" "}
+        and <span className="font-mono font-semibold">other corps × 65</span> per inbound bus.
+        MTC city bus capacity assumed at <span className="font-mono font-semibold">75 seats</span>.
+      </div>
+    </div>
+  );
+}
 
 function fmtHHMM(iso: string) {
   return new Date(iso).toLocaleTimeString("en-IN", {
