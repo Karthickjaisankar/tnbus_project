@@ -10,9 +10,8 @@ from .parser import load_snapshot
 def main():
     df, snapshot_ts = load_snapshot()
     etas = get_etas(df["LAST_TICKET_PLACE"].unique().tolist())
-    df = attach_arrival(df, etas)
-
     now = datetime.now(TZ_IST)
+    df = attach_arrival(df, etas, ref_time=now)
     fc = arrival_forecast(df, ref_time=now, hours=5, bucket_minutes=30)
     print(f"\nReference time (IST): {now.isoformat(timespec='minutes')}")
     print(f"Snapshot timestamp:   {snapshot_ts.isoformat(timespec='minutes')}")

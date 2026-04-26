@@ -85,9 +85,9 @@ def refresh_pipeline(force: bool = False) -> None:
         places = df["EFFECTIVE_PLACE"].unique().tolist()
         etas = get_etas(places)
         geos = get_geocodes(places)
-        df = attach_arrival(df, etas)
 
         now = datetime.now(TZ_IST)
+        df = attach_arrival(df, etas, ref_time=now)
         fc = arrival_forecast(
             df,
             ref_time=now,
@@ -101,7 +101,8 @@ def refresh_pipeline(force: bool = False) -> None:
         for _, r in df.iterrows():
             geo = geos.get(r["EFFECTIVE_PLACE"], {})
             arrival = r["ARRIVAL_DT"]
-            mins_to_arrive = (arrival - now).total_seconds() / 60.0
+            # ARRIVAL_DT = now + duration, so mins_to_arrive == duration.
+            mins_to_arrive = float(r["DURATION_MIN"])
             buses.append({
                 "waybill": r["WAYBILLNO"],
                 "vehicle": r["VEHICLE_NO"],

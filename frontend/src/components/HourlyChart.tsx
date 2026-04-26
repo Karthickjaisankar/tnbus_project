@@ -56,7 +56,10 @@ export function HourlyChart({ hours }: { hours: ForecastHour[] }) {
         </h3>
         <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
           Bars = passengers in that 1-hour window. Orange line = MTC Buses needed (passengers ÷ 60).
-          Number under each hour = inbound buses arriving in that window.
+          Number under each hour = inbound buses in that window.
+        </p>
+        <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 italic">
+          ETA = travel time from each bus's last known location to Kilambakkam (live Google traffic).
         </p>
       </div>
 

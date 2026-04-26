@@ -9,8 +9,20 @@ import pandas as pd
 from .config import CITY_BUS_CAPACITY, TZ_IST
 
 
-def attach_arrival(df: pd.DataFrame, etas: dict[str, dict]) -> pd.DataFrame:
-    """Add ETA + ARRIVAL_DT columns. Drops rows where ETA lookup failed."""
+def attach_arrival(
+    df: pd.DataFrame,
+    etas: dict[str, dict],
+    ref_time: datetime,
+) -> pd.DataFrame:
+    """Add ETA + ARRIVAL_DT columns. Drops rows where ETA lookup failed.
+
+    ETA model: we treat each bus's LAST_TICKET_PLACE as its current position
+    and compute ARRIVAL_DT = ref_time + duration_to_kilambakkam. This avoids
+    the "Madurai bus arrived 4 hours ago" artifact you'd get from anchoring
+    arrival to LAST_TICKET_DT — a long-distance bus that hasn't issued
+    tickets in hours has a stale LAST_TICKET_DT, but its position (the place
+    name) is still the best estimate of where it is.
+    """
     df = df.copy()
     df["DURATION_MIN"] = df["EFFECTIVE_PLACE"].map(
         lambda p: etas.get(p, {}).get("duration_in_traffic_min")
@@ -19,9 +31,8 @@ def attach_arrival(df: pd.DataFrame, etas: dict[str, dict]) -> pd.DataFrame:
         lambda p: etas.get(p, {}).get("distance_km")
     )
     df = df[df["DURATION_MIN"].notna()].copy()
-    df["ARRIVAL_DT"] = df.apply(
-        lambda r: r["LAST_TICKET_DT"] + timedelta(minutes=float(r["DURATION_MIN"])),
-        axis=1,
+    df["ARRIVAL_DT"] = df["DURATION_MIN"].apply(
+        lambda d: ref_time + timedelta(minutes=float(d))
     )
     return df
 
