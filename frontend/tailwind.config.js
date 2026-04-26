@@ -42,6 +42,22 @@ export default {
         card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06)",
         cardHover: "0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06)",
         "ring-rose": "0 0 0 1px #e11d48, 0 4px 12px rgba(225, 29, 72, 0.12)",
+        alarm: "0 6px 24px rgba(220, 38, 38, 0.18), 0 2px 6px rgba(220, 38, 38, 0.12)",
+        warn: "0 6px 24px rgba(234, 88, 12, 0.16), 0 2px 6px rgba(234, 88, 12, 0.10)",
+      },
+      keyframes: {
+        "alarm-pulse": {
+          "0%, 100%": { transform: "scale(1)", boxShadow: "0 0 0 0 rgba(220, 38, 38, 0.6)" },
+          "50%":      { transform: "scale(1.04)", boxShadow: "0 0 0 8px rgba(220, 38, 38, 0)" },
+        },
+        "soft-pulse": {
+          "0%, 100%": { transform: "scale(1)", boxShadow: "0 0 0 0 rgba(234, 88, 12, 0.5)" },
+          "50%":      { transform: "scale(1.03)", boxShadow: "0 0 0 6px rgba(234, 88, 12, 0)" },
+        },
+      },
+      animation: {
+        "alarm-pulse": "alarm-pulse 1.6s ease-in-out infinite",
+        "soft-pulse":  "soft-pulse 2.4s ease-in-out infinite",
       },
     },
   },
