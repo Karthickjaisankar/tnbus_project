@@ -107,7 +107,7 @@ def refresh_pipeline(force: bool = False) -> None:
                 "vehicle": r["VEHICLE_NO"],
                 "corporation": r["CORPORATION"],
                 "depot": r["DEPOT"],
-                "from_place": r["SERVICE_FROMPLACE"],
+                "from_place": r["FIRST_TICKET_LOCATION"],
                 "last_place": r["EFFECTIVE_PLACE"],
                 "last_ticket_time": r["LAST_TICKET_TIME"],
                 "last_ticket_dt": r["LAST_TICKET_DT"].isoformat(),

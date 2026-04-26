@@ -40,28 +40,24 @@ function fmtArrival(iso: string) {
 
 export function BusTable({ buses }: { buses: Bus[] }) {
   const [q, setQ] = useState("");
-  const [corp, setCorp] = useState<string>("ALL");
   const [from, setFrom] = useState<string>("ALL");
   const [lastSeen, setLastSeen] = useState<string>("ALL");
   const [eta, setEta] = useState<EtaBucket>("ALL");
 
-  const corps = useMemo(
-    () => ["ALL", ...Array.from(new Set(buses.map((b) => b.corporation))).sort()],
-    [buses]
-  );
   const fromPlaces = useMemo(
-    () => ["ALL", ...Array.from(new Set(buses.map((b) => b.from_place).filter(Boolean))).sort()],
+    () =>
+      ["ALL", ...Array.from(new Set(buses.map((b) => b.from_place).filter(Boolean))).sort()],
     [buses]
   );
   const lastPlaces = useMemo(
-    () => ["ALL", ...Array.from(new Set(buses.map((b) => b.last_place).filter(Boolean))).sort()],
+    () =>
+      ["ALL", ...Array.from(new Set(buses.map((b) => b.last_place).filter(Boolean))).sort()],
     [buses]
   );
 
   const rows = useMemo(() => {
     const ql = q.toLowerCase();
     return buses
-      .filter((b) => corp === "ALL" || b.corporation === corp)
       .filter((b) => from === "ALL" || b.from_place === from)
       .filter((b) => lastSeen === "ALL" || b.last_place === lastSeen)
       .filter((b) => inEtaBucket(b.mins_to_arrive, eta))
@@ -74,16 +70,14 @@ export function BusTable({ buses }: { buses: Bus[] }) {
           b.depot.toLowerCase().includes(ql)
       )
       .sort((a, b) => a.mins_to_arrive - b.mins_to_arrive);
-  }, [buses, q, corp, from, lastSeen, eta]);
+  }, [buses, q, from, lastSeen, eta]);
 
   const totalPax = useMemo(() => rows.reduce((s, b) => s + b.passengers, 0), [rows]);
   const cityBuses = Math.ceil(totalPax / 60);
 
-  const anyFilter =
-    q !== "" || corp !== "ALL" || from !== "ALL" || lastSeen !== "ALL" || eta !== "ALL";
+  const anyFilter = q !== "" || from !== "ALL" || lastSeen !== "ALL" || eta !== "ALL";
   const clearAll = () => {
     setQ("");
-    setCorp("ALL");
     setFrom("ALL");
     setLastSeen("ALL");
     setEta("ALL");
@@ -104,8 +98,8 @@ export function BusTable({ buses }: { buses: Bus[] }) {
                 {totalPax.toLocaleString("en-IN")}
               </span>{" "}
               pax · ~
-              <span className="text-accent-orange font-mono font-semibold">{cityBuses}</span> city
-              buses needed
+              <span className="text-accent-orange font-mono font-semibold">{cityBuses}</span> MTC
+              Buses needed
               {anyFilter && <span className="text-slate-400"> · filtered</span>}
             </p>
           </div>
@@ -120,10 +114,9 @@ export function BusTable({ buses }: { buses: Bus[] }) {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <FilterSelect label="Corp" value={corp} options={corps} onChange={setCorp} />
           <FilterSelect label="From" value={from} options={fromPlaces} onChange={setFrom} />
           <FilterSelect
-            label="Last"
+            label="Last Seen"
             value={lastSeen}
             options={lastPlaces}
             onChange={setLastSeen}
@@ -152,8 +145,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
           <thead className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200">
             <tr className="text-slate-600">
               <Th>Vehicle</Th>
-              <Th hideOn="sm">Corp</Th>
-              <Th hideOn="md">From</Th>
+              <Th>From</Th>
               <Th>Last seen</Th>
               <Th right hideOn="sm">Last @</Th>
               <Th right hideOn="md">km</Th>
@@ -176,10 +168,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
                   <Td>
                     <span className="font-mono text-slate-900 font-medium">{b.vehicle}</span>
                   </Td>
-                  <Td hideOn="sm">
-                    <span className="text-slate-600">{b.corporation}</span>
-                  </Td>
-                  <Td hideOn="md">
+                  <Td>
                     <span className="text-slate-700">{b.from_place}</span>
                   </Td>
                   <Td>
@@ -210,7 +199,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={9} className="text-center py-8 text-slate-400 text-xs">
+                <td colSpan={8} className="text-center py-8 text-slate-400 text-xs">
                   No buses match these filters.
                 </td>
               </tr>
@@ -219,7 +208,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
           {rows.length > 0 && (
             <tfoot className="sticky bottom-0 bg-slate-50 z-10 border-t border-slate-200">
               <tr className="text-xs">
-                <td colSpan={9} className="px-3 py-2">
+                <td colSpan={8} className="px-3 py-2">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-slate-600 font-medium">
                       Total · {rows.length.toLocaleString()} bus{rows.length === 1 ? "" : "es"}
@@ -230,7 +219,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
                       </span>{" "}
                       pax · ~
                       <span className="font-mono text-accent-orange font-semibold">{cityBuses}</span>{" "}
-                      city buses
+                      MTC Buses
                     </span>
                   </div>
                 </td>

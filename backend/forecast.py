@@ -38,8 +38,11 @@ def arrival_forecast(
     `city_buses_needed = ceil(passengers / CITY_BUS_CAPACITY)`.
     """
     ref = ref_time or datetime.now(TZ_IST)
-    minute_floor = (ref.minute // bucket_minutes) * bucket_minutes
-    start = ref.replace(minute=minute_floor, second=0, microsecond=0)
+    # Start at the NEXT bucket boundary so the chart only shows future hours.
+    # E.g., at 09:30 with 60-min bins, the first bin is 10:00–11:00 (not 09:00).
+    floor_minute = (ref.minute // bucket_minutes) * bucket_minutes
+    floored = ref.replace(minute=floor_minute, second=0, microsecond=0)
+    start = floored if floored == ref else floored + timedelta(minutes=bucket_minutes)
     n_buckets = int(hours * 60 / bucket_minutes)
     bins = [start + timedelta(minutes=i * bucket_minutes) for i in range(n_buckets + 1)]
 

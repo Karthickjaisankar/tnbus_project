@@ -43,7 +43,7 @@ function Tile({ hoursLabel, buses, passengers, icon, accent, tint, highlight }: 
         <div className="text-2xl sm:text-3xl font-bold font-mono" style={{ color: accent }}>
           {buses}
         </div>
-        <div className="text-[10px] sm:text-xs text-slate-500">buses (cumulative)</div>
+        <div className="text-[10px] sm:text-xs text-slate-500">inbound buses (cumulative)</div>
       </div>
       <div className="mt-1 text-xs sm:text-sm text-slate-700 relative font-medium">
         {passengers.toLocaleString("en-IN")} passengers
@@ -53,9 +53,9 @@ function Tile({ hoursLabel, buses, passengers, icon, accent, tint, highlight }: 
         <span style={{ color: accent }} className="font-mono font-semibold text-xs sm:text-sm">
           ~{cityBuses}
         </span>{" "}
-        city buses needed
+        MTC Buses needed
         <div className="text-[10px] text-slate-400 mt-0.5 hidden sm:block">
-          assuming 60 seats per city bus
+          assuming 60 seats per MTC Bus
         </div>
       </div>
     </div>
@@ -97,7 +97,7 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
         highlight
       />
       <Tile
-        hoursLabel="Next 5 hours · staffing horizon"
+        hoursLabel="Next 5 hours"
         buses={t.next_5h}
         passengers={t.passengers_5h}
         icon={<Clock5 className="w-4 h-4" />}

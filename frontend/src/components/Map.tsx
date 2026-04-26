@@ -104,11 +104,18 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
         spiderfyOnMaxZoom: true,
         iconCreateFunction: (c: any) => {
           const n = c.getChildCount();
-          const cls =
-            n >= 50 ? "cluster-pulse cluster-pulse-rose" : n >= 15 ? "cluster-pulse cluster-pulse-orange" : "cluster-pulse";
+          const children = c.getAllChildMarkers();
+          // Color by the SOONEST-arriving bus in the cluster — if any bus is
+          // close to Kilambakkam, the whole cluster lights up red.
+          let minMins = Infinity;
+          for (const m of children) {
+            const v = (m.options as any).busMinsToArrive;
+            if (typeof v === "number" && v < minMins) minMins = v;
+          }
+          const { color } = bucket(minMins);
           const size = n >= 50 ? 56 : n >= 15 ? 46 : 38;
           return L.divIcon({
-            html: `<div class="${cls}" style="width:${size}px;height:${size}px">${n}</div>`,
+            html: `<div class="cluster-pulse" style="width:${size}px;height:${size}px;background:${color}">${n}</div>`,
             className: "",
             iconSize: [size, size],
           });
@@ -123,8 +130,10 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
           day: "2-digit",
           month: "short",
         });
-        const marker = L.marker([b.lat!, b.lng!], { icon: busDivIcon(b) })
-          .bindPopup(
+        const marker = L.marker([b.lat!, b.lng!], {
+          icon: busDivIcon(b),
+          busMinsToArrive: b.mins_to_arrive,
+        } as any).bindPopup(
             `<div style="font-family:Inter;color:#0f172a;font-size:12px;min-width:220px">
               <div style="font-weight:700;color:#0891b2;margin-bottom:6px;font-size:13px">${b.vehicle} · ${b.corporation}</div>
               <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 8px;color:#334155">

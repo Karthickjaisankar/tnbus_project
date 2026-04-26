@@ -1,46 +1,8 @@
 import { useEffect, useState } from "react";
-import { Bus as BusIcon, RefreshCw, TrafficCone, Wifi } from "lucide-react";
+import { Bus as BusIcon, RefreshCw, Wifi } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api";
-import { ApproachTraffic, Meta } from "../types";
-
-const TRAFFIC_STYLES: Record<
-  ApproachTraffic["status"],
-  { color: string; bg: string; border: string; label: string }
-> = {
-  clear:    { color: "#059669", bg: "#ecfdf5", border: "#a7f3d0", label: "CLEAR" },
-  moderate: { color: "#d97706", bg: "#fffbeb", border: "#fcd34d", label: "MODERATE" },
-  heavy:    { color: "#e11d48", bg: "#fff1f2", border: "#fda4af", label: "HEAVY" },
-};
-
-function ApproachChip({ t }: { t: ApproachTraffic | null | undefined }) {
-  if (!t) {
-    return (
-      <div className="text-right">
-        <div className="text-[10px] uppercase tracking-wider text-slate-500">Approach</div>
-        <div className="text-xs text-slate-400">unknown</div>
-      </div>
-    );
-  }
-  const s = TRAFFIC_STYLES[t.status];
-  return (
-    <div
-      className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border flex-shrink-0"
-      style={{ background: s.bg, borderColor: s.border }}
-      title={`${t.origin} → ${t.destination} (${t.distance_km} km) · ${t.duration_traffic_min} min vs ${t.duration_normal_min} min normal · ratio ${t.ratio}`}
-    >
-      <TrafficCone className="w-4 h-4 flex-shrink-0" style={{ color: s.color }} />
-      <div className="leading-tight">
-        <div className="text-[10px] uppercase tracking-wider text-slate-500">
-          <span className="hidden sm:inline">Chennai </span>approach
-        </div>
-        <div className="text-xs font-mono font-semibold whitespace-nowrap" style={{ color: s.color }}>
-          {s.label} · {Math.round(t.duration_traffic_min)}m
-        </div>
-      </div>
-    </div>
-  );
-}
+import { Meta } from "../types";
 
 function formatIST(iso: string | null) {
   if (!iso) return "—";
@@ -91,7 +53,6 @@ export function Header({ meta }: { meta: Meta | undefined }) {
   return (
     <header className="border-b border-slate-200 bg-white">
       <div className="px-3 sm:px-6 py-2.5 sm:py-3">
-        {/* Brand row — always at top */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-cyan-50 border border-cyan-200 flex items-center justify-center flex-shrink-0">
@@ -107,7 +68,6 @@ export function Header({ meta }: { meta: Meta | undefined }) {
             </div>
           </div>
 
-          {/* Refresh button — always visible */}
           <button
             onClick={() => refresh.mutate()}
             disabled={refresh.isPending}
@@ -119,11 +79,9 @@ export function Header({ meta }: { meta: Meta | undefined }) {
           </button>
         </div>
 
-        {/* Status row — scrolls horizontally on tiny screens */}
         <div className="mt-2 sm:mt-3 flex items-center gap-3 sm:gap-4 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0">
-          <ApproachChip t={meta?.approach_traffic} />
-          <div className="text-right flex-shrink-0">
-            <div className="text-[10px] uppercase tracking-wider text-slate-500">Source</div>
+          <div className="flex-shrink-0">
+            <div className="text-[10px] uppercase tracking-wider text-slate-500">Last updated</div>
             <div className="text-xs sm:text-sm font-mono text-slate-900 whitespace-nowrap">
               <span className="hidden sm:inline">{formatIST(meta?.snapshot_ts ?? null)}</span>
               <span className="sm:hidden">{formatISTShort(meta?.snapshot_ts ?? null)}</span>
@@ -132,7 +90,7 @@ export function Header({ meta }: { meta: Meta | undefined }) {
               {meta?.filename ?? "—"}
             </div>
           </div>
-          <div className="text-right flex-shrink-0 ml-auto sm:ml-0">
+          <div className="text-right flex-shrink-0 ml-auto">
             <div className="text-[10px] uppercase tracking-wider text-slate-500">IST clock</div>
             <div className="text-xs sm:text-sm font-mono text-accent-cyan font-semibold whitespace-nowrap">
               {istNow}
