@@ -38,6 +38,16 @@ export interface BunchingAlert {
   city_buses_needed: number;
 }
 
+export interface ApproachTraffic {
+  origin: string;
+  destination: string;
+  distance_km: number;
+  duration_normal_min: number;
+  duration_traffic_min: number;
+  ratio: number;
+  status: "clear" | "moderate" | "heavy";
+}
+
 export interface CorpRow {
   corporation: string;
   buses: number;
@@ -57,6 +67,7 @@ export interface Meta {
   };
   peak_window: PeakWindow | null;
   bunching_alert: BunchingAlert | null;
+  approach_traffic: ApproachTraffic | null;
   is_stale: boolean;
   error: string | null;
 }

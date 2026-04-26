@@ -30,6 +30,7 @@ from .forecast import (
 )
 from .geocode import get_geocodes
 from .parser import load_snapshot
+from .traffic import get_approach_traffic
 
 # Track the last file we actually processed. Subsequent scheduler ticks short-
 # circuit if the filename hasn't changed — avoids re-calling Google APIs every
@@ -52,6 +53,7 @@ _STATE: dict[str, Any] = {
     },
     "peak_window": None,
     "bunching_alert": None,
+    "approach_traffic": None,
     "is_stale": False,
     "error": None,
 }
@@ -124,6 +126,7 @@ def refresh_pipeline(force: bool = False) -> None:
         w1, p1 = in_window(60)
         w5, p5 = in_window(FORECAST_HORIZON_HOURS * 60)
 
+        approach_traffic = get_approach_traffic()
         peak = find_peak_window(fc)
         bunching = detect_bunching(
             buses,
@@ -166,6 +169,7 @@ def refresh_pipeline(force: bool = False) -> None:
                 },
                 "peak_window": peak,
                 "bunching_alert": bunching,
+                "approach_traffic": approach_traffic,
                 "is_stale": is_stale,
                 "error": None,
             })
@@ -211,6 +215,7 @@ def meta():
             "totals": _STATE["totals"],
             "peak_window": _STATE["peak_window"],
             "bunching_alert": _STATE["bunching_alert"],
+            "approach_traffic": _STATE["approach_traffic"],
             "is_stale": _STATE["is_stale"],
             "error": _STATE["error"],
         }

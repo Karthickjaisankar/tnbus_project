@@ -1,8 +1,43 @@
 import { useEffect, useState } from "react";
-import { Bus as BusIcon, RefreshCw, Wifi } from "lucide-react";
+import { Bus as BusIcon, RefreshCw, TrafficCone, Wifi } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api";
-import { Meta } from "../types";
+import { ApproachTraffic, Meta } from "../types";
+
+const TRAFFIC_STYLES: Record<ApproachTraffic["status"], { color: string; bg: string; border: string; label: string }> = {
+  clear:    { color: "#34d399", bg: "rgba(52,211,153,0.10)", border: "rgba(52,211,153,0.45)", label: "CLEAR" },
+  moderate: { color: "#fbbf24", bg: "rgba(251,191,36,0.10)", border: "rgba(251,191,36,0.45)", label: "MODERATE" },
+  heavy:    { color: "#fb7185", bg: "rgba(251,113,133,0.12)", border: "rgba(251,113,133,0.55)", label: "HEAVY" },
+};
+
+function ApproachChip({ t }: { t: ApproachTraffic | null | undefined }) {
+  if (!t) {
+    return (
+      <div className="text-right">
+        <div className="text-[10px] uppercase tracking-wider text-slate-500">Chennai approach</div>
+        <div className="text-xs text-slate-500">unknown</div>
+      </div>
+    );
+  }
+  const s = TRAFFIC_STYLES[t.status];
+  return (
+    <div
+      className="flex items-center gap-2 px-3 py-2 rounded-lg border"
+      style={{ background: s.bg, borderColor: s.border }}
+      title={`${t.origin} → ${t.destination} (${t.distance_km} km) · ${t.duration_traffic_min} min vs ${t.duration_normal_min} min normal · ratio ${t.ratio}`}
+    >
+      <TrafficCone className="w-4 h-4" style={{ color: s.color }} />
+      <div className="leading-tight">
+        <div className="text-[10px] uppercase tracking-wider text-slate-400">
+          Chennai approach
+        </div>
+        <div className="text-xs font-mono" style={{ color: s.color }}>
+          {s.label} · {Math.round(t.duration_traffic_min)} min ({t.ratio.toFixed(2)}×)
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function formatIST(iso: string | null) {
   if (!iso) return "—";
@@ -55,7 +90,8 @@ export function Header({ meta }: { meta: Meta | undefined }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
+          <ApproachChip t={meta?.approach_traffic} />
           <div className="text-right">
             <div className="text-[10px] uppercase tracking-wider text-slate-500">Source data</div>
             <div className="text-sm font-mono text-slate-200">{formatIST(meta?.snapshot_ts ?? null)}</div>
