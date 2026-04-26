@@ -7,6 +7,12 @@ import { Bus } from "../types";
 
 const KILAMBAKKAM: [number, number] = [12.7782, 80.0686];
 
+// Buses whose LAST_TICKET was issued longer ago than this are hidden from
+// the map — their plotted position is the last KNOWN location, which goes
+// stale fast for long-distance routes (a Madurai bus with a 5 AM ticket is
+// nowhere near Madurai by 11 AM). They still appear in the table.
+const FRESH_POSITION_MAX_MIN = 60;
+
 // Color buckets by ETA — red <1h, amber 1–3h, yellow 3–6h, green >6h.
 // Negative ETAs (already arrived) get a neutral gray so they don't pollute
 // the urgency signal.
@@ -81,11 +87,22 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
     mapRef.current = m;
   }, []);
 
-  // valid coords
-  const valid = useMemo(
-    () => buses.filter((b) => b.lat != null && b.lng != null),
-    [buses]
-  );
+  // Only plot buses whose LAST_TICKET is recent enough that their position
+  // is still meaningful. See FRESH_POSITION_MAX_MIN above.
+  const { valid, staleCount } = useMemo(() => {
+    const now = Date.now();
+    let stale = 0;
+    const v = buses.filter((b) => {
+      if (b.lat == null || b.lng == null) return false;
+      const ageMin = (now - new Date(b.last_ticket_dt).getTime()) / 60000;
+      if (ageMin > FRESH_POSITION_MAX_MIN) {
+        stale++;
+        return false;
+      }
+      return true;
+    });
+    return { valid: v, staleCount: stale };
+  }, [buses]);
 
   // render layers when buses or mode change
   useEffect(() => {
@@ -224,6 +241,18 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
           <Dot color="#16a34a" /> &gt;6h
         </div>
       </div>
+
+      {/* Stale-position notice */}
+      {staleCount > 0 && (
+        <div
+          className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 z-[1000] bg-white/95 backdrop-blur border border-slate-200 rounded-lg px-2.5 py-1.5 text-[10px] sm:text-xs text-slate-600 shadow-card max-w-[180px] sm:max-w-none"
+          title="These buses' last ticket was issued more than 60 min ago, so their last-known location is no longer reliable. They still appear in the table."
+        >
+          <span className="font-mono font-semibold text-slate-800">{staleCount}</span> bus
+          {staleCount === 1 ? "" : "es"} hidden
+          <span className="hidden sm:inline"> (stale position)</span>
+        </div>
+      )}
     </div>
   );
 }
