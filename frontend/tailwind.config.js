@@ -54,10 +54,33 @@ export default {
           "0%, 100%": { transform: "scale(1)", boxShadow: "0 0 0 0 rgba(234, 88, 12, 0.5)" },
           "50%":      { transform: "scale(1.03)", boxShadow: "0 0 0 6px rgba(234, 88, 12, 0)" },
         },
+        // Whole-card siren glow — expanding ring of color + drop-shadow swell
+        "siren-red": {
+          "0%, 100%": {
+            boxShadow:
+              "0 0 0 0 rgba(220, 38, 38, 0.55), 0 6px 20px rgba(220, 38, 38, 0.18)",
+          },
+          "50%": {
+            boxShadow:
+              "0 0 0 14px rgba(220, 38, 38, 0), 0 12px 38px rgba(220, 38, 38, 0.42)",
+          },
+        },
+        "siren-orange": {
+          "0%, 100%": {
+            boxShadow:
+              "0 0 0 0 rgba(234, 88, 12, 0.45), 0 6px 20px rgba(234, 88, 12, 0.16)",
+          },
+          "50%": {
+            boxShadow:
+              "0 0 0 12px rgba(234, 88, 12, 0), 0 10px 32px rgba(234, 88, 12, 0.32)",
+          },
+        },
       },
       animation: {
         "alarm-pulse": "alarm-pulse 1.6s ease-in-out infinite",
         "soft-pulse":  "soft-pulse 2.4s ease-in-out infinite",
+        "siren-red":    "siren-red 1.4s ease-in-out infinite",
+        "siren-orange": "siren-orange 1.9s ease-in-out infinite",
       },
     },
   },

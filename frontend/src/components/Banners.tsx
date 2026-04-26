@@ -39,7 +39,7 @@ export function BunchingBanner({ alert }: { alert: BunchingAlert | null | undefi
           </span>{" "}
           carrying{" "}
           <span className="font-mono font-semibold">{alert.passengers.toLocaleString("en-IN")}</span>{" "}
-          passengers ({fmtRelativeMin(alert.start)})
+          passengers expected ({fmtRelativeMin(alert.start)})
         </div>
       </div>
       <div className="flex-shrink-0 text-right border-l border-rose-200 pl-4">

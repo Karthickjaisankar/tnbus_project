@@ -146,7 +146,7 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
                 <span style="color:#64748b">Last seen</span><span>${b.last_place} @ ${b.last_ticket_time}</span>
                 <span style="color:#64748b">Distance</span><span>${b.distance_km} km</span>
                 <span style="color:#64748b">ETA</span><span>${arr} <span style="color:${color};font-weight:600">(${label})</span></span>
-                <span style="color:#64748b">Passengers</span><span><b>${b.passengers}</b></span>
+                <span style="color:#64748b">Passengers expected</span><span><b>${b.passengers}</b></span>
               </div>
             </div>`
           );

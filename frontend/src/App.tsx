@@ -15,10 +15,10 @@ export default function App() {
   const isLoading = meta.isLoading || forecast.isLoading || buses.isLoading;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 overflow-x-hidden">
       <Header meta={meta.data} />
 
-      <main className="flex-1 px-3 sm:px-6 py-3 sm:py-5 grid gap-3 sm:gap-4" style={{ gridTemplateRows: "auto auto 1fr auto" }}>
+      <main className="flex-1 px-3 sm:px-6 py-3 sm:py-5 grid gap-3 sm:gap-4 min-w-0 overflow-x-hidden" style={{ gridTemplateRows: "auto auto 1fr auto" }}>
         <ErrorBanner meta={meta.data} />
         <StaleDataBanner meta={meta.data} />
 

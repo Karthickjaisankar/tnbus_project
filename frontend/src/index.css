@@ -12,6 +12,13 @@ body,
   font-family: Inter, system-ui, sans-serif;
 }
 
+/* Hard-lock the page to the device width on phones — no horizontal scroll. */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* Leaflet: light tile styling */
 .leaflet-container {
   background: #f1f5f9;

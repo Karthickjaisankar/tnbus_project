@@ -55,27 +55,28 @@ interface Variant {
 
 const VARIANTS: Record<string, Variant> = {
   alarmRed: {
-    border: "border-red-300",
+    border: "border-red-400",
     bg: "bg-gradient-to-br from-rose-50 via-red-50 to-orange-50",
-    shadow: "shadow-alarm",
+    shadow: "animate-siren-red",
     accent: "#dc2626",
     accentText: "text-red-700",
     badgeBg: "bg-red-600",
     iconBubbleBg: "bg-red-100",
-    iconAnimate: "animate-alarm-pulse",
+    iconAnimate: "",
     badgeText: "DISPATCH NOW",
     badgeAnimate: "animate-pulse",
   },
   warnOrange: {
-    border: "border-orange-300",
+    border: "border-orange-400",
     bg: "bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50",
-    shadow: "shadow-warn",
+    shadow: "animate-siren-orange",
     accent: "#ea580c",
     accentText: "text-orange-700",
     badgeBg: "bg-orange-500",
     iconBubbleBg: "bg-orange-100",
-    iconAnimate: "animate-soft-pulse",
+    iconAnimate: "",
     badgeText: "PREP NOW",
+    badgeAnimate: "animate-pulse",
   },
   calmCyan: {
     border: "border-cyan-200",
@@ -150,13 +151,13 @@ function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
         </div>
       </div>
 
-      {/* Passenger row */}
-      <div className="relative flex items-center gap-2 mb-3 min-w-0">
+      {/* Passengers expected row */}
+      <div className="relative flex items-center gap-2 mb-3 min-w-0 flex-wrap">
         <Users className="w-4 h-4 text-slate-500 flex-shrink-0" />
         <span className="text-sm sm:text-base font-bold text-slate-800">
           {passengers.toLocaleString("en-IN")}
         </span>
-        <span className="text-xs text-slate-500">passengers</span>
+        <span className="text-xs text-slate-500">passengers expected</span>
       </div>
 
       {/* Minimum MTC Buses required — infographic */}
@@ -174,7 +175,7 @@ function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
         </div>
         <MTCBusPills count={cityBuses} color={v.accent} />
         <div className="text-[10px] text-slate-500 mt-1.5 leading-snug">
-          {passengers.toLocaleString("en-IN")} ÷ 60 = {baseBuses} base · +20% buffer ={" "}
+          {passengers.toLocaleString("en-IN")} expected ÷ 60 seats = {baseBuses} base · +20% buffer ={" "}
           <span className="font-mono font-bold" style={{ color: v.accent }}>
             min {cityBuses}
           </span>
