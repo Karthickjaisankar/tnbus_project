@@ -24,8 +24,8 @@ export default function App() {
 
         <KPITiles meta={meta.data} />
 
-        <section className="grid gap-4 lg:grid-cols-3 min-h-[560px]">
-          <div className="lg:col-span-2 min-h-[560px]">
+        <section className="grid gap-4 lg:grid-cols-2 min-h-[560px]">
+          <div className="min-h-[560px]">
             <HourlyChart hours={forecast.data?.hours ?? []} />
           </div>
           <div className="min-h-[560px]">

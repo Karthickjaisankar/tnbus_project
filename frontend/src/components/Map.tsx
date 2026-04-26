@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet.markercluster";
 import "leaflet.heat";
-import { Layers, MapPin } from "lucide-react";
+import { Layers, MapPin, Maximize2, Minimize2 } from "lucide-react";
 import { Bus } from "../types";
 
 const KILAMBAKKAM: [number, number] = [12.7782, 80.0686];
@@ -31,6 +31,21 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const heatRef = useRef<L.Layer | null>(null);
   const [mode, setMode] = useState<"clusters" | "heatmap" | "both">("clusters");
+  const [fullscreen, setFullscreen] = useState(false);
+
+  // Re-tile when entering/leaving fullscreen + ESC to exit
+  useEffect(() => {
+    const m = mapRef.current;
+    if (m) {
+      // Wait for the layout transition before recomputing tile bounds
+      setTimeout(() => m.invalidateSize(), 60);
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && fullscreen) setFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fullscreen]);
 
   // init once
   useEffect(() => {
@@ -144,7 +159,13 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
   }, [valid, mode]);
 
   return (
-    <div className="relative h-full rounded-xl overflow-hidden border border-ink-600">
+    <div
+      className={
+        fullscreen
+          ? "fixed inset-0 z-[2000] rounded-none border-0 overflow-hidden bg-ink-900"
+          : "relative h-full rounded-xl overflow-hidden border border-ink-600"
+      }
+    >
       <div ref={mapEl} className="absolute inset-0" />
 
       {/* Mode toggle */}
@@ -162,6 +183,16 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
           </button>
         ))}
       </div>
+
+      {/* Fullscreen toggle */}
+      <button
+        onClick={() => setFullscreen((v) => !v)}
+        className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink-800/85 backdrop-blur border border-ink-600 hover:border-accent-cyan/50 text-xs text-slate-300 hover:text-accent-cyan transition"
+        title={fullscreen ? "Exit fullscreen (Esc)" : "Expand to fullscreen"}
+      >
+        {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+        {fullscreen ? "Exit" : "Fullscreen"}
+      </button>
 
       {/* Legend */}
       <div className="absolute bottom-3 left-3 z-[1000] bg-ink-800/85 backdrop-blur border border-ink-600 rounded-lg px-3 py-2 text-xs">
