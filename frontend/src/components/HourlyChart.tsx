@@ -65,7 +65,7 @@ export function HourlyChart({ hours }: { hours: ForecastHour[] }) {
   const data: ChartDatum[] = hours.map((h) => ({ ...h, label: fmtHour(h.hour) }));
 
   return (
-    <div className="h-full rounded-xl border border-slate-200 bg-white p-3 sm:p-4 flex flex-col shadow-card min-w-0 overflow-hidden">
+    <div className="h-full w-full max-w-full rounded-xl border border-slate-200 bg-white p-3 sm:p-4 flex flex-col shadow-card min-w-0 overflow-hidden">
       <div className="mb-2">
         <h3 className="text-sm sm:text-base font-semibold text-slate-900">
           Arrivals per hour — next 5 hours

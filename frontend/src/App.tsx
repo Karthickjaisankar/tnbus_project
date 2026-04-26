@@ -15,25 +15,31 @@ export default function App() {
   const isLoading = meta.isLoading || forecast.isLoading || buses.isLoading;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 overflow-x-hidden w-full max-w-full">
       <Header meta={meta.data} />
 
-      <main className="flex-1 px-3 sm:px-6 py-3 sm:py-5 grid gap-3 sm:gap-4 min-w-0 overflow-x-hidden" style={{ gridTemplateRows: "auto auto 1fr auto" }}>
+      <main
+        className="flex-1 px-3 sm:px-6 py-3 sm:py-5 grid gap-3 sm:gap-4 w-full max-w-full"
+        style={{
+          gridTemplateRows: "auto auto 1fr auto",
+          gridTemplateColumns: "minmax(0, 1fr)",
+        }}
+      >
         <ErrorBanner meta={meta.data} />
         <StaleDataBanner meta={meta.data} />
 
         <KPITiles meta={meta.data} />
 
-        <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-          <div className="min-h-[420px] sm:min-h-[480px] lg:min-h-[560px]">
+        <section className="grid gap-3 sm:gap-4 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] w-full max-w-full">
+          <div className="min-h-[420px] sm:min-h-[480px] lg:min-h-[560px] min-w-0 max-w-full">
             <HourlyChart hours={forecast.data?.hours ?? []} />
           </div>
-          <div className="min-h-[420px] sm:min-h-[480px] lg:min-h-[560px]">
+          <div className="min-h-[420px] sm:min-h-[480px] lg:min-h-[560px] min-w-0 max-w-full">
             <MapPanel buses={buses.data?.buses ?? []} />
           </div>
         </section>
 
-        <section>
+        <section className="w-full max-w-full min-w-0">
           <BusTable buses={buses.data?.buses ?? []} />
         </section>
       </main>

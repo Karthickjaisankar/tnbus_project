@@ -105,7 +105,7 @@ function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
   const cityBuses = minMTCBuses(passengers);
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border-2 ${v.border} ${v.bg} ${v.shadow} p-3 sm:p-4`}
+      className={`relative overflow-hidden rounded-xl border-2 ${v.border} ${v.bg} ${v.shadow} p-3 sm:p-4 min-w-0 w-full`}
     >
       {/* Decorative blurred orb */}
       <div
@@ -189,18 +189,18 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
   const t = meta?.totals;
   if (!t) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-[minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-3 w-full max-w-full">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl border-2 border-slate-200 bg-white p-4 h-[230px] shadow-card"
+            className="rounded-xl border-2 border-slate-200 bg-white p-4 h-[230px] shadow-card min-w-0"
           />
         ))}
       </div>
     );
   }
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-3 w-full max-w-full">
       <Tile
         hoursLabel="Next 1 hour"
         buses={t.next_1h}

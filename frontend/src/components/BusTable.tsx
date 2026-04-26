@@ -96,7 +96,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-card min-w-0 overflow-hidden">
+    <div className="rounded-xl border border-slate-200 bg-white shadow-card min-w-0 w-full max-w-full overflow-hidden">
       <div className="p-3 border-b border-slate-200 space-y-2">
         <div className="flex items-start sm:items-center justify-between flex-wrap gap-2">
           <div className="min-w-0">
