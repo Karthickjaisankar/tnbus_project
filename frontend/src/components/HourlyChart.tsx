@@ -56,8 +56,8 @@ export function HourlyChart({ hours }: { hours: ForecastHour[] }) {
           Arrivals per hour — next 5 hours
         </h3>
         <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
-          Bars = passengers in that 1-hour window. Orange line = MTC Buses needed (passengers ÷ 60).
-          Number under each hour = inbound buses in that window.
+          Bars = passengers in that 1-hour window. Orange line = minimum MTC Buses required
+          (passengers ÷ 60 + 20% buffer). Number under each hour = inbound buses in that window.
         </p>
         <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 italic">
           ETA = travel time from each bus's last known location to Kilambakkam (live Google traffic).
@@ -148,7 +148,7 @@ export function HourlyChart({ hours }: { hours: ForecastHour[] }) {
               stroke="#ea580c"
               strokeWidth={2.5}
               dot={{ r: 5, fill: "#ea580c", stroke: "#ffffff", strokeWidth: 2 }}
-              name="MTC Buses needed"
+              name="Min MTC Buses required"
             >
               <LabelList
                 dataKey="city_buses_needed"
@@ -157,7 +157,7 @@ export function HourlyChart({ hours }: { hours: ForecastHour[] }) {
                 fontSize={12}
                 fontWeight={700}
                 offset={14}
-                formatter={(v: number) => `~${v}`}
+                formatter={(v: number) => `${v}`}
               />
             </Line>
           </ComposedChart>

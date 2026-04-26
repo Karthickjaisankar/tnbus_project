@@ -2,7 +2,14 @@ import { BellRing, Bus as BusIcon, Clock5, Flame, Users, Zap } from "lucide-reac
 import { Meta } from "../types";
 
 const CAPACITY = 60;
+const BUFFER_RATIO = 1.2; // 20% operational buffer over the raw base
 const MAX_BUS_PILLS = 18;
+
+function minMTCBuses(passengers: number): number {
+  if (passengers <= 0) return 0;
+  const base = Math.ceil(passengers / CAPACITY);
+  return Math.ceil(base * BUFFER_RATIO);
+}
 
 // Visual: a row of mini bus pills, each = 1 MTC bus needed.
 function MTCBusPills({ count, color }: { count: number; color: string }) {
@@ -93,7 +100,8 @@ interface TileProps {
 
 function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
   const v = VARIANTS[variant];
-  const cityBuses = Math.ceil(passengers / CAPACITY);
+  const baseBuses = Math.ceil(passengers / CAPACITY);
+  const cityBuses = minMTCBuses(passengers);
   return (
     <div
       className={`relative overflow-hidden rounded-xl border-2 ${v.border} ${v.bg} ${v.shadow} p-3 sm:p-4`}
@@ -151,21 +159,25 @@ function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
         <span className="text-xs text-slate-500">passengers</span>
       </div>
 
-      {/* MTC Buses needed — infographic */}
+      {/* Minimum MTC Buses required — infographic */}
       <div className="relative bg-white/80 backdrop-blur-sm rounded-lg p-2 sm:p-2.5 border border-white shadow-sm">
-        <div className="flex items-center gap-2 mb-1.5">
-          <BusIcon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: v.accent }} />
-          <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold truncate">
-            MTC Buses needed
+        <div className="flex items-baseline justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <BusIcon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: v.accent }} />
+            <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold truncate">
+              Minimum MTC Buses required
+            </span>
+          </div>
+          <span className="text-lg font-mono font-black" style={{ color: v.accent }}>
+            {cityBuses}
           </span>
         </div>
         <MTCBusPills count={cityBuses} color={v.accent} />
         <div className="text-[10px] text-slate-500 mt-1.5 leading-snug">
-          {passengers.toLocaleString("en-IN")} ÷ 60 ={" "}
+          {passengers.toLocaleString("en-IN")} ÷ 60 = {baseBuses} base · +20% buffer ={" "}
           <span className="font-mono font-bold" style={{ color: v.accent }}>
-            ~{cityBuses}
-          </span>{" "}
-          MTC Buses
+            min {cityBuses}
+          </span>
         </div>
       </div>
     </div>

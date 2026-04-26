@@ -84,7 +84,8 @@ export function BusTable({ buses }: { buses: Bus[] }) {
   }, [buses, q, from, lastSeen, eta]);
 
   const totalPax = useMemo(() => rows.reduce((s, b) => s + b.passengers, 0), [rows]);
-  const cityBuses = Math.ceil(totalPax / 60);
+  // 20% operational buffer over base (matches backend mtc_buses_required).
+  const cityBuses = totalPax > 0 ? Math.ceil(Math.ceil(totalPax / 60) * 1.2) : 0;
 
   const anyFilter = q !== "" || from !== "ALL" || lastSeen !== "ALL" || eta !== "ALL";
   const clearAll = () => {
@@ -108,9 +109,9 @@ export function BusTable({ buses }: { buses: Bus[] }) {
               <span className="text-accent-cyan font-mono font-semibold">
                 {totalPax.toLocaleString("en-IN")}
               </span>{" "}
-              pax · ~
+              pax · minimum{" "}
               <span className="text-accent-orange font-mono font-semibold">{cityBuses}</span> MTC
-              Buses needed
+              Buses required (incl. 20% buffer)
               {anyFilter && <span className="text-slate-400"> · filtered</span>}
             </p>
           </div>
@@ -228,7 +229,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
                       <span className="font-mono text-accent-cyan font-semibold">
                         {totalPax.toLocaleString("en-IN")}
                       </span>{" "}
-                      pax · ~
+                      pax · minimum{" "}
                       <span className="font-mono text-accent-orange font-semibold">{cityBuses}</span>{" "}
                       MTC Buses
                     </span>

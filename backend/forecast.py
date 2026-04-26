@@ -6,7 +6,18 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from .config import CITY_BUS_CAPACITY, TZ_IST
+from .config import CITY_BUS_BUFFER_RATIO, CITY_BUS_CAPACITY, TZ_IST
+
+
+def mtc_buses_required(passengers: int) -> int:
+    """Minimum MTC city buses to staff for N passengers, with the operational
+    buffer applied. base = ceil(passengers / capacity); recommended =
+    ceil(base * BUFFER_RATIO). 10 base -> 12 with 20% buffer.
+    """
+    if passengers <= 0:
+        return 0
+    base = math.ceil(passengers / CITY_BUS_CAPACITY)
+    return math.ceil(base * CITY_BUS_BUFFER_RATIO)
 
 
 def attach_arrival(
@@ -77,9 +88,7 @@ def arrival_forecast(
     out = full.merge(grouped, on="BUCKET_START", how="left").fillna({"buses": 0, "passengers": 0})
     out["buses"] = out["buses"].astype(int)
     out["passengers"] = out["passengers"].astype(int)
-    out["city_buses_needed"] = out["passengers"].map(
-        lambda p: math.ceil(p / CITY_BUS_CAPACITY) if p > 0 else 0
-    )
+    out["city_buses_needed"] = out["passengers"].map(mtc_buses_required)
     return out
 
 
@@ -92,7 +101,7 @@ def find_peak_window(forecast: pd.DataFrame) -> dict | None:
         "start": peak["BUCKET_START"].isoformat(),
         "buses": int(peak["buses"]),
         "passengers": int(peak["passengers"]),
-        "city_buses_needed": int(peak["city_buses_needed"]),
+        "city_buses_needed": mtc_buses_required(int(peak["passengers"])),
     }
 
 
@@ -137,7 +146,7 @@ def detect_bunching(
                 "end": end.isoformat(),
                 "buses": count,
                 "passengers": pax,
-                "city_buses_needed": math.ceil(pax / CITY_BUS_CAPACITY) if pax else 0,
+                "city_buses_needed": mtc_buses_required(pax),
             }
         if items[i][0] >= ref_time + timedelta(minutes=horizon_end_min):
             break
