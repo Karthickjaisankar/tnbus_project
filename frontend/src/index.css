@@ -7,59 +7,66 @@ body,
 #root {
   height: 100%;
   margin: 0;
-  background: #070b14;
-  color: #e5e7eb;
+  background: #f8fafc;
+  color: #0f172a;
   font-family: Inter, system-ui, sans-serif;
 }
 
-/* Map: invert the dark tiles' attribution badge */
+/* Leaflet: light tile styling */
 .leaflet-container {
-  background: #0d1322;
+  background: #f1f5f9;
   font-family: Inter, system-ui, sans-serif;
 }
 .leaflet-control-attribution {
-  background: rgba(7, 11, 20, 0.7) !important;
-  color: #94a3b8 !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #475569 !important;
+  border-radius: 4px;
 }
 .leaflet-control-attribution a {
-  color: #22d3ee !important;
+  color: #0891b2 !important;
+}
+.leaflet-popup-content-wrapper {
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+}
+.leaflet-popup-tip {
+  background: #ffffff;
 }
 
-/* Custom cluster bubble */
+/* Cluster bubbles — solid fills with white inner border + soft shadow */
 .cluster-pulse {
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.85) 0%, rgba(34, 211, 238, 0.25) 70%);
-  border: 2px solid rgba(34, 211, 238, 0.9);
-  color: #fff;
+  background: #0891b2;
+  border: 3px solid #ffffff;
+  color: #ffffff;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  box-shadow: 0 0 16px rgba(34, 211, 238, 0.5);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
   font-family: "JetBrains Mono", monospace;
   font-size: 13px;
 }
 .cluster-pulse-orange {
-  background: radial-gradient(circle, rgba(251, 146, 60, 0.9) 0%, rgba(251, 146, 60, 0.3) 70%);
-  border-color: rgba(251, 146, 60, 0.95);
-  box-shadow: 0 0 18px rgba(251, 146, 60, 0.55);
+  background: #ea580c;
 }
 .cluster-pulse-rose {
-  background: radial-gradient(circle, rgba(251, 113, 133, 0.95) 0%, rgba(251, 113, 133, 0.35) 70%);
-  border-color: rgba(251, 113, 133, 1);
-  box-shadow: 0 0 22px rgba(251, 113, 133, 0.6);
+  background: #e11d48;
 }
 
-/* Bus marker pulse */
+/* Individual bus markers */
 .bus-marker {
   border-radius: 9999px;
-  box-shadow: 0 0 8px currentColor;
-  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
 }
 
+/* Destination pulse animation */
 @keyframes pulse-ring {
   0% { transform: scale(0.95); opacity: 0.7; }
-  70% { transform: scale(1.4); opacity: 0; }
+  70% { transform: scale(1.5); opacity: 0; }
   100% { transform: scale(0.95); opacity: 0; }
 }
 .destination-pulse::before {
@@ -67,11 +74,15 @@ body,
   position: absolute;
   inset: -8px;
   border-radius: 9999px;
-  border: 2px solid #22d3ee;
+  border: 2px solid #0891b2;
   animation: pulse-ring 2s ease-out infinite;
 }
 
+/* Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: #0d1322; }
-::-webkit-scrollbar-thumb { background: #28344f; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #3d4a6b; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

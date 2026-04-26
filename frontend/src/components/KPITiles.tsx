@@ -9,43 +9,50 @@ interface TileProps {
   passengers: number;
   icon: React.ReactNode;
   accent: string;
+  tint: string;
   highlight?: boolean;
 }
 
-function Tile({ hoursLabel, buses, passengers, icon, accent, highlight }: TileProps) {
+function Tile({ hoursLabel, buses, passengers, icon, accent, tint, highlight }: TileProps) {
   const cityBuses = Math.ceil(passengers / CAPACITY);
   return (
     <div
-      className={`rounded-xl border bg-ink-800/60 backdrop-blur p-4 relative overflow-hidden group ${
-        highlight
-          ? "border-accent-rose/60 shadow-[0_0_24px_rgba(251,113,133,0.25)]"
-          : "border-ink-600"
+      className={`rounded-xl border bg-white p-4 relative overflow-hidden transition shadow-card hover:shadow-cardHover ${
+        highlight ? "ring-2 ring-offset-1" : ""
       }`}
+      style={highlight ? { borderColor: accent, boxShadow: `0 0 0 1px ${accent}33, 0 4px 14px ${accent}22` } : { borderColor: "#e2e8f0" }}
     >
       <div
-        className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition"
-        style={{ background: accent }}
+        className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-50 blur-2xl"
+        style={{ background: tint }}
       />
       <div className="flex items-center justify-between relative">
-        <span className="text-xs uppercase tracking-wider text-slate-400">{hoursLabel}</span>
-        <div style={{ color: accent }}>{icon}</div>
+        <span className="text-xs uppercase tracking-wider text-slate-500 font-medium">
+          {hoursLabel}
+        </span>
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center"
+          style={{ background: tint, color: accent }}
+        >
+          {icon}
+        </div>
       </div>
-      <div className="mt-2 flex items-baseline gap-2 relative">
-        <div className="text-3xl font-semibold font-mono" style={{ color: accent }}>
+      <div className="mt-3 flex items-baseline gap-2 relative">
+        <div className="text-3xl font-bold font-mono" style={{ color: accent }}>
           {buses}
         </div>
         <div className="text-xs text-slate-500">buses (cumulative)</div>
       </div>
-      <div className="mt-1 text-xs text-slate-300 relative">
+      <div className="mt-1 text-sm text-slate-700 relative font-medium">
         {passengers.toLocaleString("en-IN")} passengers
       </div>
-      <div className="mt-2 pt-2 border-t border-ink-700 text-[11px] text-slate-400 relative leading-snug">
+      <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-600 relative leading-snug">
         {passengers.toLocaleString("en-IN")} ÷ {CAPACITY} ={" "}
-        <span style={{ color: accent }} className="font-mono font-semibold">
+        <span style={{ color: accent }} className="font-mono font-semibold text-sm">
           ~{cityBuses}
         </span>{" "}
         city buses needed
-        <div className="text-[10px] text-slate-500 mt-0.5">assuming 60 seats per city bus</div>
+        <div className="text-[10px] text-slate-400 mt-0.5">assuming 60 seats per city bus</div>
       </div>
     </div>
   );
@@ -57,7 +64,10 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-ink-600 bg-ink-800/40 p-4 h-[150px]" />
+          <div
+            key={i}
+            className="rounded-xl border border-slate-200 bg-white p-4 h-[170px] shadow-card"
+          />
         ))}
       </div>
     );
@@ -69,7 +79,8 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
         buses={t.next_1h}
         passengers={t.passengers_1h}
         icon={<Zap className="w-4 h-4" />}
-        accent="#fb7185"
+        accent="#e11d48"
+        tint="#fff1f2"
         highlight
       />
       <Tile
@@ -77,7 +88,8 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
         buses={t.next_2h}
         passengers={t.passengers_2h}
         icon={<Flame className="w-4 h-4" />}
-        accent="#fb923c"
+        accent="#ea580c"
+        tint="#fff7ed"
         highlight
       />
       <Tile
@@ -85,21 +97,24 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
         buses={t.next_3h}
         passengers={t.passengers_3h}
         icon={<Clock3 className="w-4 h-4" />}
-        accent="#fbbf24"
+        accent="#d97706"
+        tint="#fffbeb"
       />
       <Tile
         hoursLabel="Next 4 hours"
         buses={t.next_4h}
         passengers={t.passengers_4h}
         icon={<Clock4 className="w-4 h-4" />}
-        accent="#a78bfa"
+        accent="#7c3aed"
+        tint="#f5f3ff"
       />
       <Tile
         hoursLabel="Next 5 hours"
         buses={t.next_5h}
         passengers={t.passengers_5h}
         icon={<Clock5 className="w-4 h-4" />}
-        accent="#22d3ee"
+        accent="#0891b2"
+        tint="#ecfeff"
       />
     </div>
   );

@@ -7,18 +7,18 @@ import { Bus } from "../types";
 
 const KILAMBAKKAM: [number, number] = [12.7782, 80.0686];
 
-// Color buckets by ETA
+// Color buckets by ETA — light-theme palette (darker variants)
 function bucket(mins: number): { color: string; label: string } {
-  if (mins < 60) return { color: "#fb7185", label: "<1h" };
-  if (mins < 180) return { color: "#fb923c", label: "1–3h" };
-  if (mins < 360) return { color: "#fbbf24", label: "3–6h" };
-  return { color: "#22d3ee", label: "6h+" };
+  if (mins < 60) return { color: "#e11d48", label: "<1h" };
+  if (mins < 180) return { color: "#ea580c", label: "1–3h" };
+  if (mins < 360) return { color: "#d97706", label: "3–6h" };
+  return { color: "#0891b2", label: "6h+" };
 }
 
 function busDivIcon(b: Bus): L.DivIcon {
   const { color } = bucket(b.mins_to_arrive);
   return L.divIcon({
-    html: `<div class="bus-marker" style="width:14px;height:14px;background:${color};color:${color}"></div>`,
+    html: `<div class="bus-marker" style="width:14px;height:14px;background:${color}"></div>`,
     className: "",
     iconSize: [14, 14],
     iconAnchor: [7, 7],
@@ -37,7 +37,6 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
   useEffect(() => {
     const m = mapRef.current;
     if (m) {
-      // Wait for the layout transition before recomputing tile bounds
       setTimeout(() => m.invalidateSize(), 60);
     }
     const onKey = (e: KeyboardEvent) => {
@@ -57,7 +56,7 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
       attributionControl: true,
     });
     L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
       {
         attribution: '&copy; OpenStreetMap &copy; CARTO',
         subdomains: "abcd",
@@ -67,7 +66,7 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
 
     // Destination marker
     const destIcon = L.divIcon({
-      html: '<div class="destination-pulse" style="position:relative;width:18px;height:18px;border-radius:9999px;background:#22d3ee;border:2px solid #fff;box-shadow:0 0 16px #22d3ee"></div>',
+      html: '<div class="destination-pulse" style="position:relative;width:18px;height:18px;border-radius:9999px;background:#0891b2;border:2px solid #ffffff;box-shadow:0 2px 8px rgba(15,23,42,0.25)"></div>',
       className: "",
       iconSize: [18, 18],
       iconAnchor: [9, 9],
@@ -116,7 +115,7 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
         },
       });
       valid.forEach((b) => {
-        const { label } = bucket(b.mins_to_arrive);
+        const { color, label } = bucket(b.mins_to_arrive);
         const arr = new Date(b.arrival_dt).toLocaleString("en-IN", {
           timeZone: "Asia/Kolkata",
           hour: "2-digit",
@@ -126,13 +125,15 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
         });
         const marker = L.marker([b.lat!, b.lng!], { icon: busDivIcon(b) })
           .bindPopup(
-            `<div style="font-family:Inter;color:#0d1322;font-size:12px;min-width:200px">
-              <div style="font-weight:600;color:#22d3ee;margin-bottom:4px">${b.vehicle} · ${b.corporation}</div>
-              <div><b>From:</b> ${b.from_place}</div>
-              <div><b>Last seen:</b> ${b.last_place} @ ${b.last_ticket_time}</div>
-              <div><b>Distance:</b> ${b.distance_km} km</div>
-              <div><b>ETA:</b> ${arr} <span style="color:#fb923c">(${label})</span></div>
-              <div><b>Passengers:</b> ${b.passengers}</div>
+            `<div style="font-family:Inter;color:#0f172a;font-size:12px;min-width:220px">
+              <div style="font-weight:700;color:#0891b2;margin-bottom:6px;font-size:13px">${b.vehicle} · ${b.corporation}</div>
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 8px;color:#334155">
+                <span style="color:#64748b">From</span><span>${b.from_place}</span>
+                <span style="color:#64748b">Last seen</span><span>${b.last_place} @ ${b.last_ticket_time}</span>
+                <span style="color:#64748b">Distance</span><span>${b.distance_km} km</span>
+                <span style="color:#64748b">ETA</span><span>${arr} <span style="color:${color};font-weight:600">(${label})</span></span>
+                <span style="color:#64748b">Passengers</span><span><b>${b.passengers}</b></span>
+              </div>
             </div>`
           );
         cluster.addLayer(marker);
@@ -152,7 +153,7 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
           radius: 30,
           blur: 25,
           maxZoom: 11,
-          gradient: { 0.2: "#22d3ee", 0.45: "#fbbf24", 0.7: "#fb923c", 1.0: "#fb7185" },
+          gradient: { 0.2: "#0891b2", 0.45: "#d97706", 0.7: "#ea580c", 1.0: "#e11d48" },
         })
         .addTo(m);
     }
@@ -162,20 +163,22 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
     <div
       className={
         fullscreen
-          ? "fixed inset-0 z-[2000] rounded-none border-0 overflow-hidden bg-ink-900"
-          : "relative h-full rounded-xl overflow-hidden border border-ink-600"
+          ? "fixed inset-0 z-[2000] rounded-none border-0 overflow-hidden bg-white"
+          : "relative h-full rounded-xl overflow-hidden border border-slate-200 shadow-card"
       }
     >
       <div ref={mapEl} className="absolute inset-0" />
 
       {/* Mode toggle */}
-      <div className="absolute top-3 left-3 z-[1000] flex gap-1 bg-ink-800/85 backdrop-blur border border-ink-600 rounded-lg p-1 text-xs">
+      <div className="absolute top-3 left-3 z-[1000] flex gap-1 bg-white/95 backdrop-blur border border-slate-200 rounded-lg p-1 text-xs shadow-card">
         {(["clusters", "heatmap", "both"] as const).map((opt) => (
           <button
             key={opt}
             onClick={() => setMode(opt)}
             className={`px-3 py-1 rounded transition flex items-center gap-1 ${
-              mode === opt ? "bg-accent-cyan/20 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
+              mode === opt
+                ? "bg-cyan-50 text-accent-cyan font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
             }`}
           >
             <Layers className="w-3 h-3" />
@@ -187,7 +190,7 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
       {/* Fullscreen toggle */}
       <button
         onClick={() => setFullscreen((v) => !v)}
-        className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink-800/85 backdrop-blur border border-ink-600 hover:border-accent-cyan/50 text-xs text-slate-300 hover:text-accent-cyan transition"
+        className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur border border-slate-200 hover:border-accent-cyan/60 text-xs text-slate-700 hover:text-accent-cyan transition shadow-card"
         title={fullscreen ? "Exit fullscreen (Esc)" : "Expand to fullscreen"}
       >
         {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -195,15 +198,15 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
       </button>
 
       {/* Legend */}
-      <div className="absolute bottom-3 left-3 z-[1000] bg-ink-800/85 backdrop-blur border border-ink-600 rounded-lg px-3 py-2 text-xs">
-        <div className="flex items-center gap-2 mb-1 text-slate-300">
+      <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-card">
+        <div className="flex items-center gap-2 mb-1 text-slate-700 font-medium">
           <MapPin className="w-3 h-3 text-accent-cyan" /> ETA to Kilambakkam
         </div>
-        <div className="flex items-center gap-3">
-          <Dot color="#fb7185" /> &lt;1h
-          <Dot color="#fb923c" /> 1–3h
-          <Dot color="#fbbf24" /> 3–6h
-          <Dot color="#22d3ee" /> 6h+
+        <div className="flex items-center gap-3 text-slate-600">
+          <Dot color="#e11d48" /> &lt;1h
+          <Dot color="#ea580c" /> 1–3h
+          <Dot color="#d97706" /> 3–6h
+          <Dot color="#0891b2" /> 6h+
         </div>
       </div>
     </div>
@@ -213,8 +216,8 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
 function Dot({ color }: { color: string }) {
   return (
     <span
-      className="inline-block w-2.5 h-2.5 rounded-full"
-      style={{ background: color, boxShadow: `0 0 6px ${color}` }}
+      className="inline-block w-2.5 h-2.5 rounded-full border border-white"
+      style={{ background: color, boxShadow: "0 1px 2px rgba(15,23,42,0.2)" }}
     />
   );
 }
