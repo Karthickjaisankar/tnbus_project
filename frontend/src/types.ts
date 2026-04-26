@@ -61,8 +61,10 @@ export interface Meta {
   totals: {
     buses: number;
     passengers: number;
-    next_30min: number; passengers_30min: number;
     next_1h: number; passengers_1h: number;
+    next_2h: number; passengers_2h: number;
+    next_3h: number; passengers_3h: number;
+    next_4h: number; passengers_4h: number;
     next_5h: number; passengers_5h: number;
   };
   peak_window: PeakWindow | null;

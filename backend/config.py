@@ -25,10 +25,10 @@ TZ_IST = ZoneInfo("Asia/Kolkata")
 ETA_CACHE_TTL_MIN = 0
 
 # Operational planning constants
-CITY_BUS_CAPACITY = 50            # avg seats per MTC city bus → drives "buses needed"
-FORECAST_BUCKET_MIN = 30          # forecast bin size (30-min for dispatch decisions)
+CITY_BUS_CAPACITY = 60            # avg seats per MTC city bus → drives "buses needed"
+FORECAST_BUCKET_MIN = 60          # forecast bin size (1-hour for chart)
 FORECAST_HORIZON_HOURS = 5        # planning window
-BUNCHING_WINDOW_MIN = 15          # sliding window width for bunching detection
+BUNCHING_WINDOW_MIN = 15          # sliding window width for bunching detection (computed but UI-hidden)
 BUNCHING_THRESHOLD_BUSES = 15     # alert if >=N buses arrive within the window
 STALE_DATA_THRESHOLD_MIN = 40     # warn if no new file for >40 min during ops hours
 

@@ -1,20 +1,25 @@
-import { Clock5, Flame, TrendingUp, Zap } from "lucide-react";
+import { Clock3, Clock4, Clock5, Flame, Zap } from "lucide-react";
 import { Meta } from "../types";
 
+const CAPACITY = 60;
+
 interface TileProps {
-  label: string;
-  value: number | string;
-  sub?: string;
+  hoursLabel: string;
+  buses: number;
+  passengers: number;
   icon: React.ReactNode;
   accent: string;
   highlight?: boolean;
 }
 
-function Tile({ label, value, sub, icon, accent, highlight }: TileProps) {
+function Tile({ hoursLabel, buses, passengers, icon, accent, highlight }: TileProps) {
+  const cityBuses = Math.ceil(passengers / CAPACITY);
   return (
     <div
       className={`rounded-xl border bg-ink-800/60 backdrop-blur p-4 relative overflow-hidden group ${
-        highlight ? "border-accent-rose/60 shadow-[0_0_24px_rgba(251,113,133,0.25)]" : "border-ink-600"
+        highlight
+          ? "border-accent-rose/60 shadow-[0_0_24px_rgba(251,113,133,0.25)]"
+          : "border-ink-600"
       }`}
     >
       <div
@@ -22,60 +27,79 @@ function Tile({ label, value, sub, icon, accent, highlight }: TileProps) {
         style={{ background: accent }}
       />
       <div className="flex items-center justify-between relative">
-        <span className="text-xs uppercase tracking-wider text-slate-400">{label}</span>
+        <span className="text-xs uppercase tracking-wider text-slate-400">{hoursLabel}</span>
         <div style={{ color: accent }}>{icon}</div>
       </div>
-      <div className="mt-2 text-3xl font-semibold font-mono relative" style={{ color: accent }}>
-        {value}
+      <div className="mt-2 flex items-baseline gap-2 relative">
+        <div className="text-3xl font-semibold font-mono" style={{ color: accent }}>
+          {buses}
+        </div>
+        <div className="text-xs text-slate-500">buses (cumulative)</div>
       </div>
-      {sub && <div className="mt-1 text-xs text-slate-500 relative">{sub}</div>}
+      <div className="mt-1 text-xs text-slate-300 relative">
+        {passengers.toLocaleString("en-IN")} passengers
+      </div>
+      <div className="mt-2 pt-2 border-t border-ink-700 text-[11px] text-slate-400 relative leading-snug">
+        {passengers.toLocaleString("en-IN")} ÷ {CAPACITY} ={" "}
+        <span style={{ color: accent }} className="font-mono font-semibold">
+          ~{cityBuses}
+        </span>{" "}
+        city buses needed
+        <div className="text-[10px] text-slate-500 mt-0.5">assuming 60 seats per city bus</div>
+      </div>
     </div>
   );
 }
 
-function fmtHHMM(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
 export function KPITiles({ meta }: { meta: Meta | undefined }) {
   const t = meta?.totals;
-  const peak = meta?.peak_window;
-
+  if (!t) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="rounded-xl border border-ink-600 bg-ink-800/40 p-4 h-[150px]" />
+        ))}
+      </div>
+    );
+  }
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       <Tile
-        label="Next 30 min"
-        value={t?.next_30min ?? "—"}
-        sub={t ? `${t.passengers_30min.toLocaleString("en-IN")} pax · dispatch ~${Math.ceil(t.passengers_30min / 50)} city buses` : "—"}
+        hoursLabel="Next 1 hour"
+        buses={t.next_1h}
+        passengers={t.passengers_1h}
         icon={<Zap className="w-4 h-4" />}
         accent="#fb7185"
         highlight
       />
       <Tile
-        label="Next 1 hour"
-        value={t?.next_1h ?? "—"}
-        sub={t ? `${t.passengers_1h.toLocaleString("en-IN")} pax · ~${Math.ceil(t.passengers_1h / 50)} city buses` : "—"}
+        hoursLabel="Next 2 hours"
+        buses={t.next_2h}
+        passengers={t.passengers_2h}
         icon={<Flame className="w-4 h-4" />}
         accent="#fb923c"
+        highlight
       />
       <Tile
-        label="Next 5 hours"
-        value={t?.next_5h ?? "—"}
-        sub={t ? `${t.passengers_5h.toLocaleString("en-IN")} pax across the shift` : "—"}
+        hoursLabel="Next 3 hours"
+        buses={t.next_3h}
+        passengers={t.passengers_3h}
+        icon={<Clock3 className="w-4 h-4" />}
+        accent="#fbbf24"
+      />
+      <Tile
+        hoursLabel="Next 4 hours"
+        buses={t.next_4h}
+        passengers={t.passengers_4h}
+        icon={<Clock4 className="w-4 h-4" />}
+        accent="#a78bfa"
+      />
+      <Tile
+        hoursLabel="Next 5 hours"
+        buses={t.next_5h}
+        passengers={t.passengers_5h}
         icon={<Clock5 className="w-4 h-4" />}
         accent="#22d3ee"
-      />
-      <Tile
-        label="Peak window"
-        value={peak ? `${fmtHHMM(peak.start)}` : "—"}
-        sub={peak ? `${peak.buses} buses · ${peak.passengers.toLocaleString("en-IN")} pax · ~${peak.city_buses_needed} city buses` : "no peak in horizon"}
-        icon={<TrendingUp className="w-4 h-4" />}
-        accent="#a78bfa"
       />
     </div>
   );

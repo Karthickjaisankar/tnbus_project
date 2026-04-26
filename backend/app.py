@@ -47,8 +47,10 @@ _STATE: dict[str, Any] = {
     "by_corp": [],
     "totals": {
         "buses": 0, "passengers": 0,
-        "next_30min": 0, "passengers_30min": 0,
         "next_1h": 0, "passengers_1h": 0,
+        "next_2h": 0, "passengers_2h": 0,
+        "next_3h": 0, "passengers_3h": 0,
+        "next_4h": 0, "passengers_4h": 0,
         "next_5h": 0, "passengers_5h": 0,
     },
     "peak_window": None,
@@ -122,8 +124,10 @@ def refresh_pipeline(force: bool = False) -> None:
             in_w = [b for b in buses if 0 <= b["mins_to_arrive"] <= mins_max]
             return len(in_w), sum(b["passengers"] for b in in_w)
 
-        w30, p30 = in_window(30)
         w1, p1 = in_window(60)
+        w2, p2 = in_window(120)
+        w3, p3 = in_window(180)
+        w4, p4 = in_window(240)
         w5, p5 = in_window(FORECAST_HORIZON_HOURS * 60)
 
         approach_traffic = get_approach_traffic()
@@ -163,8 +167,10 @@ def refresh_pipeline(force: bool = False) -> None:
                 "totals": {
                     "buses": len(buses),
                     "passengers": int(df["PASSENGERS_COUNT"].sum()),
-                    "next_30min": w30, "passengers_30min": p30,
                     "next_1h": w1, "passengers_1h": p1,
+                    "next_2h": w2, "passengers_2h": p2,
+                    "next_3h": w3, "passengers_3h": p3,
+                    "next_4h": w4, "passengers_4h": p4,
                     "next_5h": w5, "passengers_5h": p5,
                 },
                 "peak_window": peak,
@@ -175,7 +181,7 @@ def refresh_pipeline(force: bool = False) -> None:
             })
         _LAST_FILENAME = path.name
         bunch_msg = f" BUNCHING: {bunching['buses']} buses in 15min" if bunching else ""
-        print(f"[refresh] done: {len(buses)} buses, {w30} in 30min, {w1} in 1h ({p1} pax){bunch_msg}")
+        print(f"[refresh] done: {len(buses)} buses, {w1} in 1h ({p1} pax), {w5} in 5h ({p5} pax){bunch_msg}")
     except Exception as e:
         print(f"[refresh] FAILED: {e}")
         with _LOCK:
