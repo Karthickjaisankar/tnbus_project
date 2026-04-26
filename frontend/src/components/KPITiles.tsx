@@ -1,4 +1,4 @@
-import { Clock3, Clock4, Clock5, Flame, Zap } from "lucide-react";
+import { Clock5, Flame, Zap } from "lucide-react";
 import { Meta } from "../types";
 
 const CAPACITY = 60;
@@ -66,8 +66,8 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
   const t = meta?.totals;
   if (!t) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
             className="rounded-xl border border-slate-200 bg-white p-4 h-[170px] shadow-card"
@@ -77,9 +77,9 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
     );
   }
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <Tile
-        hoursLabel="Next 1 hour"
+        hoursLabel="Next 1 hour · dispatch now"
         buses={t.next_1h}
         passengers={t.passengers_1h}
         icon={<Zap className="w-4 h-4" />}
@@ -97,31 +97,13 @@ export function KPITiles({ meta }: { meta: Meta | undefined }) {
         highlight
       />
       <Tile
-        hoursLabel="Next 3 hours"
-        buses={t.next_3h}
-        passengers={t.passengers_3h}
-        icon={<Clock3 className="w-4 h-4" />}
-        accent="#d97706"
-        tint="#fffbeb"
+        hoursLabel="Next 5 hours · staffing horizon"
+        buses={t.next_5h}
+        passengers={t.passengers_5h}
+        icon={<Clock5 className="w-4 h-4" />}
+        accent="#0891b2"
+        tint="#ecfeff"
       />
-      <Tile
-        hoursLabel="Next 4 hours"
-        buses={t.next_4h}
-        passengers={t.passengers_4h}
-        icon={<Clock4 className="w-4 h-4" />}
-        accent="#7c3aed"
-        tint="#f5f3ff"
-      />
-      <div className="col-span-2 sm:col-span-1">
-        <Tile
-          hoursLabel="Next 5 hours"
-          buses={t.next_5h}
-          passengers={t.passengers_5h}
-          icon={<Clock5 className="w-4 h-4" />}
-          accent="#0891b2"
-          tint="#ecfeff"
-        />
-      </div>
     </div>
   );
 }
