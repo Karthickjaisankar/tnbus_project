@@ -92,10 +92,10 @@ export function BusTable({ buses }: { buses: Bus[] }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-card">
       <div className="p-3 border-b border-slate-200 space-y-2">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div>
+        <div className="flex items-start sm:items-center justify-between flex-wrap gap-2">
+          <div className="min-w-0">
             <h3 className="text-sm font-semibold text-slate-900">Inbound buses</h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-[11px] sm:text-xs text-slate-500 leading-snug">
               <span className="text-slate-700 font-mono font-semibold">
                 {rows.length.toLocaleString()}
               </span>{" "}
@@ -103,7 +103,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
               <span className="text-accent-cyan font-mono font-semibold">
                 {totalPax.toLocaleString("en-IN")}
               </span>{" "}
-              passengers · ~
+              pax · ~
               <span className="text-accent-orange font-mono font-semibold">{cityBuses}</span> city
               buses needed
               {anyFilter && <span className="text-slate-400"> · filtered</span>}
@@ -112,9 +112,9 @@ export function BusTable({ buses }: { buses: Bus[] }) {
           {anyFilter && (
             <button
               onClick={clearAll}
-              className="flex items-center gap-1 text-xs text-slate-600 hover:text-accent-rose transition px-2 py-1 rounded border border-slate-200 hover:border-accent-rose/50"
+              className="flex items-center gap-1 text-xs text-slate-600 hover:text-accent-rose transition px-2 py-1 rounded border border-slate-200 hover:border-accent-rose/50 flex-shrink-0"
             >
-              <X className="w-3 h-3" /> Clear filters
+              <X className="w-3 h-3" /> Clear
             </button>
           )}
         </div>
@@ -123,7 +123,7 @@ export function BusTable({ buses }: { buses: Bus[] }) {
           <FilterSelect label="Corp" value={corp} options={corps} onChange={setCorp} />
           <FilterSelect label="From" value={from} options={fromPlaces} onChange={setFrom} />
           <FilterSelect
-            label="Last seen"
+            label="Last"
             value={lastSeen}
             options={lastPlaces}
             onChange={setLastSeen}
@@ -135,13 +135,13 @@ export function BusTable({ buses }: { buses: Bus[] }) {
             optionLabels={Object.fromEntries(ETA_BUCKETS.map((b) => [b.value, b.label]))}
             onChange={(v) => setEta(v as EtaBucket)}
           />
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="vehicle / place / depot…"
-              className="bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 w-64 focus:border-accent-cyan/60 focus:outline-none focus:ring-2 focus:ring-cyan-100"
+              className="bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 w-full sm:w-64 focus:border-accent-cyan/60 focus:outline-none focus:ring-2 focus:ring-cyan-100"
             />
           </div>
         </div>
@@ -152,13 +152,13 @@ export function BusTable({ buses }: { buses: Bus[] }) {
           <thead className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200">
             <tr className="text-slate-600">
               <Th>Vehicle</Th>
-              <Th>Corp</Th>
-              <Th>From</Th>
+              <Th hideOn="sm">Corp</Th>
+              <Th hideOn="md">From</Th>
               <Th>Last seen</Th>
-              <Th right>Last @</Th>
-              <Th right>km</Th>
+              <Th right hideOn="sm">Last @</Th>
+              <Th right hideOn="md">km</Th>
               <Th right>Pax</Th>
-              <Th right>ETA</Th>
+              <Th right hideOn="lg">ETA</Th>
               <Th right>In</Th>
             </tr>
           </thead>
@@ -169,37 +169,37 @@ export function BusTable({ buses }: { buses: Bus[] }) {
                 b.mins_to_arrive < 0
                   ? "arrived"
                   : b.mins_to_arrive < 60
-                  ? `${Math.round(b.mins_to_arrive)} min`
+                  ? `${Math.round(b.mins_to_arrive)}m`
                   : `${Math.floor(b.mins_to_arrive / 60)}h ${Math.round(b.mins_to_arrive % 60)}m`;
               return (
                 <tr key={b.waybill} className="border-b border-slate-100 hover:bg-slate-50">
                   <Td>
                     <span className="font-mono text-slate-900 font-medium">{b.vehicle}</span>
                   </Td>
-                  <Td>
+                  <Td hideOn="sm">
                     <span className="text-slate-600">{b.corporation}</span>
                   </Td>
-                  <Td>
+                  <Td hideOn="md">
                     <span className="text-slate-700">{b.from_place}</span>
                   </Td>
                   <Td>
                     <span className="text-slate-900">{b.last_place}</span>
                   </Td>
-                  <Td right mono>
+                  <Td right mono hideOn="sm">
                     <span className="text-slate-600">{b.last_ticket_time}</span>
                   </Td>
-                  <Td right mono>
+                  <Td right mono hideOn="md">
                     <span className="text-slate-700">{b.distance_km.toFixed(0)}</span>
                   </Td>
                   <Td right mono>
                     <span className="text-slate-900 font-semibold">{b.passengers}</span>
                   </Td>
-                  <Td right mono>
+                  <Td right mono hideOn="lg">
                     <span className="text-slate-600">{fmtArrival(b.arrival_dt)}</span>
                   </Td>
                   <Td right>
                     <span
-                      className="px-2 py-0.5 rounded font-mono text-[11px] font-semibold border"
+                      className="px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-[11px] font-semibold border whitespace-nowrap"
                       style={{ background: bk.bg, color: bk.color, borderColor: bk.border }}
                     >
                       {inMins}
@@ -219,15 +219,20 @@ export function BusTable({ buses }: { buses: Bus[] }) {
           {rows.length > 0 && (
             <tfoot className="sticky bottom-0 bg-slate-50 z-10 border-t border-slate-200">
               <tr className="text-xs">
-                <td colSpan={6} className="px-3 py-2 text-slate-600 text-right font-medium">
-                  Total ({rows.length.toLocaleString()} bus{rows.length === 1 ? "" : "es"})
-                </td>
-                <td className="px-3 py-2 text-right font-mono text-accent-cyan font-semibold">
-                  {totalPax.toLocaleString("en-IN")}
-                </td>
-                <td colSpan={2} className="px-3 py-2 text-right text-slate-600">
-                  ~<span className="font-mono text-accent-orange font-semibold">{cityBuses}</span>{" "}
-                  city buses
+                <td colSpan={9} className="px-3 py-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-slate-600 font-medium">
+                      Total · {rows.length.toLocaleString()} bus{rows.length === 1 ? "" : "es"}
+                    </span>
+                    <span className="text-slate-700">
+                      <span className="font-mono text-accent-cyan font-semibold">
+                        {totalPax.toLocaleString("en-IN")}
+                      </span>{" "}
+                      pax · ~
+                      <span className="font-mono text-accent-orange font-semibold">{cityBuses}</span>{" "}
+                      city buses
+                    </span>
+                  </div>
                 </td>
               </tr>
             </tfoot>
@@ -272,11 +277,27 @@ function FilterSelect({ label, value, options, optionLabels, onChange }: FilterS
   );
 }
 
-const Th = ({ children, right }: { children: React.ReactNode; right?: boolean }) => (
+type Hide = "sm" | "md" | "lg";
+
+const HIDE_CLASS: Record<Hide, string> = {
+  sm: "hidden sm:table-cell",
+  md: "hidden md:table-cell",
+  lg: "hidden lg:table-cell",
+};
+
+const Th = ({
+  children,
+  right,
+  hideOn,
+}: {
+  children: React.ReactNode;
+  right?: boolean;
+  hideOn?: Hide;
+}) => (
   <th
-    className={`px-3 py-2 font-semibold text-[10px] uppercase tracking-wider ${
+    className={`px-2 sm:px-3 py-2 font-semibold text-[10px] uppercase tracking-wider ${
       right ? "text-right" : "text-left"
-    }`}
+    } ${hideOn ? HIDE_CLASS[hideOn] : ""}`}
   >
     {children}
   </th>
@@ -286,12 +307,18 @@ const Td = ({
   children,
   right,
   mono,
+  hideOn,
 }: {
   children: React.ReactNode;
   right?: boolean;
   mono?: boolean;
+  hideOn?: Hide;
 }) => (
-  <td className={`px-3 py-2 ${right ? "text-right" : "text-left"} ${mono ? "font-mono" : ""}`}>
+  <td
+    className={`px-2 sm:px-3 py-2 ${right ? "text-right" : "text-left"} ${
+      mono ? "font-mono" : ""
+    } ${hideOn ? HIDE_CLASS[hideOn] : ""}`}
+  >
     {children}
   </td>
 );

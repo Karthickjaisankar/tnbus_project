@@ -25,23 +25,21 @@ function fmtHour(iso: string) {
 export function HourlyChart({ hours }: { hours: ForecastHour[] }) {
   const data = hours.map((h) => ({ ...h, label: fmtHour(h.hour) }));
   return (
-    <div className="h-full rounded-xl border border-slate-200 bg-white p-4 flex flex-col shadow-card">
+    <div className="h-full rounded-xl border border-slate-200 bg-white p-3 sm:p-4 flex flex-col shadow-card">
       <div className="mb-2">
-        <h3 className="text-base font-semibold text-slate-900">
+        <h3 className="text-sm sm:text-base font-semibold text-slate-900">
           Arrivals per hour — next 5 hours
         </h3>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Each bar = buses arriving <span className="text-slate-700 font-medium">within</span> that
-          1-hour window (not cumulative). City buses needed = passengers ÷ 60 seats.
+        <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+          Each bar = buses <span className="text-slate-700 font-medium">within</span> that 1-hour
+          window. City buses needed = passengers ÷ 60.
         </p>
       </div>
 
-      <div className="flex-1 min-h-[420px]">
+      <div className="flex-1 min-h-[340px] sm:min-h-[420px]">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
-            data={data}
-            margin={{ top: 36, right: 32, left: 8, bottom: 24 }}
-          >
+          <ComposedChart data={data} margin={{ top: 32, right: 16, left: 0, bottom: 16 }}>
+
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
               dataKey="label"

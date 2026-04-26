@@ -170,19 +170,20 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
       <div ref={mapEl} className="absolute inset-0" />
 
       {/* Mode toggle */}
-      <div className="absolute top-3 left-3 z-[1000] flex gap-1 bg-white/95 backdrop-blur border border-slate-200 rounded-lg p-1 text-xs shadow-card">
+      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-[1000] flex gap-1 bg-white/95 backdrop-blur border border-slate-200 rounded-lg p-1 text-[11px] sm:text-xs shadow-card">
         {(["clusters", "heatmap", "both"] as const).map((opt) => (
           <button
             key={opt}
             onClick={() => setMode(opt)}
-            className={`px-3 py-1 rounded transition flex items-center gap-1 ${
+            className={`px-2 sm:px-3 py-1 rounded transition flex items-center gap-1 ${
               mode === opt
                 ? "bg-cyan-50 text-accent-cyan font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
             }`}
           >
             <Layers className="w-3 h-3" />
-            {opt}
+            <span className="hidden sm:inline">{opt}</span>
+            <span className="sm:hidden">{opt[0].toUpperCase()}</span>
           </button>
         ))}
       </div>
@@ -190,19 +191,20 @@ export function MapPanel({ buses }: { buses: Bus[] }) {
       {/* Fullscreen toggle */}
       <button
         onClick={() => setFullscreen((v) => !v)}
-        className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur border border-slate-200 hover:border-accent-cyan/60 text-xs text-slate-700 hover:text-accent-cyan transition shadow-card"
+        className="absolute top-2 sm:top-3 right-2 sm:right-3 z-[1000] flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur border border-slate-200 hover:border-accent-cyan/60 text-[11px] sm:text-xs text-slate-700 hover:text-accent-cyan transition shadow-card"
         title={fullscreen ? "Exit fullscreen (Esc)" : "Expand to fullscreen"}
       >
         {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-        {fullscreen ? "Exit" : "Fullscreen"}
+        <span className="hidden sm:inline">{fullscreen ? "Exit" : "Fullscreen"}</span>
       </button>
 
       {/* Legend */}
-      <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-card">
+      <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 z-[1000] bg-white/95 backdrop-blur border border-slate-200 rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs shadow-card">
         <div className="flex items-center gap-2 mb-1 text-slate-700 font-medium">
-          <MapPin className="w-3 h-3 text-accent-cyan" /> ETA to Kilambakkam
+          <MapPin className="w-3 h-3 text-accent-cyan" /> ETA
+          <span className="hidden sm:inline"> to Kilambakkam</span>
         </div>
-        <div className="flex items-center gap-3 text-slate-600">
+        <div className="flex items-center gap-2 sm:gap-3 text-slate-600">
           <Dot color="#e11d48" /> &lt;1h
           <Dot color="#ea580c" /> 1–3h
           <Dot color="#d97706" /> 3–6h

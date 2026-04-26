@@ -18,17 +18,17 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       <Header meta={meta.data} />
 
-      <main className="flex-1 px-6 py-5 grid gap-4" style={{ gridTemplateRows: "auto auto 1fr auto" }}>
+      <main className="flex-1 px-3 sm:px-6 py-3 sm:py-5 grid gap-3 sm:gap-4" style={{ gridTemplateRows: "auto auto 1fr auto" }}>
         <ErrorBanner meta={meta.data} />
         <StaleDataBanner meta={meta.data} />
 
         <KPITiles meta={meta.data} />
 
-        <section className="grid gap-4 lg:grid-cols-2 min-h-[560px]">
-          <div className="min-h-[560px]">
+        <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+          <div className="min-h-[420px] sm:min-h-[480px] lg:min-h-[560px]">
             <HourlyChart hours={forecast.data?.hours ?? []} />
           </div>
-          <div className="min-h-[560px]">
+          <div className="min-h-[420px] sm:min-h-[480px] lg:min-h-[560px]">
             <MapPanel buses={buses.data?.buses ?? []} />
           </div>
         </section>
