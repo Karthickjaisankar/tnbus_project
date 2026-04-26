@@ -96,22 +96,24 @@ function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
   const cityBuses = Math.ceil(passengers / CAPACITY);
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border-2 ${v.border} ${v.bg} ${v.shadow} p-4`}
+      className={`relative overflow-hidden rounded-xl border-2 ${v.border} ${v.bg} ${v.shadow} p-3 sm:p-4`}
     >
       {/* Decorative blurred orb */}
       <div
-        className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-25 blur-3xl pointer-events-none"
+        className="absolute -top-12 -right-12 w-32 sm:w-44 h-32 sm:h-44 rounded-full opacity-25 blur-3xl pointer-events-none"
         style={{ background: v.accent }}
       />
 
-      {/* Header: label + status badge */}
-      <div className="relative flex items-start justify-between mb-2">
-        <span className={`text-xs uppercase tracking-wider font-bold ${v.accentText}`}>
+      {/* Header: label + status badge. Allows wrap on tight viewports. */}
+      <div className="relative flex items-start justify-between gap-2 flex-wrap mb-2">
+        <span
+          className={`text-[11px] sm:text-xs uppercase tracking-wider font-bold ${v.accentText} min-w-0`}
+        >
           {hoursLabel}
         </span>
         {v.badgeText && (
           <span
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${v.badgeBg} text-white text-[10px] font-bold uppercase tracking-wider shadow-sm ${v.badgeAnimate ?? ""}`}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${v.badgeBg} text-white text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shadow-sm whitespace-nowrap flex-shrink-0 ${v.badgeAnimate ?? ""}`}
           >
             {variant === "alarmRed" && <BellRing className="w-3 h-3" />}
             {v.badgeText}
@@ -119,44 +121,47 @@ function Tile({ hoursLabel, buses, passengers, icon, variant }: TileProps) {
         )}
       </div>
 
-      {/* Icon bubble with pulse animation for urgent variants */}
-      <div className="relative mb-2 flex items-center gap-3">
+      {/* Icon bubble + big number row */}
+      <div className="relative mb-2 flex items-center gap-2.5 sm:gap-3 min-w-0">
         <div
-          className={`w-11 h-11 rounded-full flex items-center justify-center ${v.iconBubbleBg} ${v.iconAnimate}`}
+          className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center flex-shrink-0 ${v.iconBubbleBg} ${v.iconAnimate}`}
           style={{ color: v.accent }}
         >
           {icon}
         </div>
-        <div>
-          <div className="text-4xl font-black font-mono leading-none" style={{ color: v.accent }}>
+        <div className="min-w-0 flex-1">
+          <div
+            className="text-3xl sm:text-4xl font-black font-mono leading-none truncate"
+            style={{ color: v.accent }}
+          >
             {buses}
           </div>
-          <div className={`text-[11px] font-semibold mt-1 ${v.accentText}`}>
-            inbound buses (cumulative)
+          <div className={`text-[10px] sm:text-[11px] font-semibold mt-1 ${v.accentText} truncate`}>
+            inbound buses<span className="hidden sm:inline"> (cumulative)</span>
           </div>
         </div>
       </div>
 
-      {/* Passenger count with icon */}
-      <div className="relative flex items-center gap-2 mb-3">
-        <Users className="w-4 h-4 text-slate-500" />
-        <span className="text-base font-bold text-slate-800">
+      {/* Passenger row */}
+      <div className="relative flex items-center gap-2 mb-3 min-w-0">
+        <Users className="w-4 h-4 text-slate-500 flex-shrink-0" />
+        <span className="text-sm sm:text-base font-bold text-slate-800">
           {passengers.toLocaleString("en-IN")}
         </span>
         <span className="text-xs text-slate-500">passengers</span>
       </div>
 
       {/* MTC Buses needed — infographic */}
-      <div className="relative bg-white/80 backdrop-blur-sm rounded-lg p-2.5 border border-white shadow-sm">
+      <div className="relative bg-white/80 backdrop-blur-sm rounded-lg p-2 sm:p-2.5 border border-white shadow-sm">
         <div className="flex items-center gap-2 mb-1.5">
-          <BusIcon className="w-3.5 h-3.5" style={{ color: v.accent }} />
-          <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+          <BusIcon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: v.accent }} />
+          <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold truncate">
             MTC Buses needed
           </span>
         </div>
         <MTCBusPills count={cityBuses} color={v.accent} />
         <div className="text-[10px] text-slate-500 mt-1.5 leading-snug">
-          {passengers.toLocaleString("en-IN")} passengers ÷ 60 seats ={" "}
+          {passengers.toLocaleString("en-IN")} ÷ 60 ={" "}
           <span className="font-mono font-bold" style={{ color: v.accent }}>
             ~{cityBuses}
           </span>{" "}

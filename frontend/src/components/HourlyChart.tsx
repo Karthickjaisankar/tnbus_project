@@ -26,8 +26,9 @@ interface ChartDatum extends ForecastHour {
   label: string;
 }
 
-// Custom X-axis tick: hour label on first line, "N inbound buses" on second.
-// Putting the inbound-bus count here avoids overlap with the bar/line labels above.
+// Custom X-axis tick: hour label on first line, "N buses" on second.
+// Kept short — "N inbound buses" was overlapping adjacent ticks on narrow
+// viewports. The subtitle above the chart already explains "buses = inbound".
 function HourTick(props: any) {
   const { x, y, payload, data } = props;
   const item = data[payload.index] as ChartDatum | undefined;
@@ -38,7 +39,7 @@ function HourTick(props: any) {
       </text>
       {item && (
         <text x={0} y={0} dy={30} textAnchor="middle" fill="#7c3aed" fontSize={10.5} fontWeight={600}>
-          {item.buses} inbound buses
+          {item.buses} buses
         </text>
       )}
     </g>
