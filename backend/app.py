@@ -88,27 +88,45 @@ def refresh_pipeline(force: bool = False) -> None:
     global _LAST_FILENAME
     print(f"[refresh] starting at {datetime.now(TZ_IST).isoformat(timespec='seconds')} (force={force})")
     try:
-        # DISABLED: Stop reading from Google Drive to avoid API costs during testing
-        # path = sync_latest()
-        # if path is None:
-        #     raise RuntimeError("no source file in Drive")
+        # Load last local file in data/ directory
+        from pathlib import Path
+        data_files = list(Path("data").glob("*.xlsx"))
+        if not data_files:
+            raise RuntimeError("no xlsx files in data/ directory")
+        path = sorted(data_files, key=lambda p: p.stat().st_mtime)[-1]  # Get most recently modified
+        print(f"[refresh] using local file: {path.name}")
         
-        print("[refresh] Drive sync disabled for testing")
-        return
+        if not force and path.name == _LAST_FILENAME:
+            print(f"[refresh] already processed {path.name}, skipping")
+            return
+        
+        _LAST_FILENAME = path.name
 
-        # Replace TOTAL_PASSENGERS / PASSENGERS_COUNT with the corp-based
-        # estimate. Online bookings aren't in the source data, so a flat
-        # per-bus count gives MTC a more realistic planning number.
-        df["PASSENGERS_COUNT"] = df["CORPORATION"].apply(_passengers_for)
-
+        df, snapshot_ts = load_snapshot(path)
+        places = df["EFFECTIVE_PLACE"].unique().tolist()
+        
+        # Call Google APIs once for the last file (will use cache if available)
+        print(f"[refresh] calling Google APIs for {len(places)} places...")
+        etas = get_etas(places)
+        geos = get_geocodes(places)
+        
+        df = attach_arrival(df, etas, ref_time=None)
+        
+        # Use current time as reference
         now = datetime.now(TZ_IST)
-        df = attach_arrival(df, etas, ref_time=now)
+        
         fc = arrival_forecast(
             df,
             ref_time=now,
             hours=FORECAST_HORIZON_HOURS,
             bucket_minutes=FORECAST_BUCKET_MIN,
         )
+        
+        # Replace TOTAL_PASSENGERS / PASSENGERS_COUNT with the corp-based
+        # estimate. Online bookings aren't in the source data, so a flat
+        # per-bus count gives MTC a more realistic planning number.
+        df["PASSENGERS_COUNT"] = df["CORPORATION"].apply(_passengers_for)
+
         by_c = by_corporation(df)
 
         # Per-bus payload for map + table
@@ -206,7 +224,6 @@ def refresh_pipeline(force: bool = False) -> None:
                 "is_stale": is_stale,
                 "error": None,
             })
-        _LAST_FILENAME = path.name
         bunch_msg = f" BUNCHING: {bunching['buses']} buses in 15min" if bunching else ""
         print(f"[refresh] done: {len(buses)} buses, {w1} in 1h ({p1} pax), {w5} in 5h ({p5} pax){bunch_msg}")
     except Exception as e:

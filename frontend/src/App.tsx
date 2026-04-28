@@ -5,7 +5,7 @@ import { KPITiles } from "./components/KPITiles";
 import { MapPanel } from "./components/Map";
 import { HourlyChart } from "./components/HourlyChart";
 import { BusTable } from "./components/BusTable";
-import { ErrorBanner, FormulaNoticeBanner, StaleDataBanner, DataNotRefreshedBanner } from "./components/Banners";
+import { ErrorBanner, FormulaNoticeBanner, StaleDataBanner, AutoRefreshStoppedBanner } from "./components/Banners";
 
 export default function App() {
   const meta = useQuery({ queryKey: ["meta"], queryFn: api.meta });
@@ -25,7 +25,7 @@ export default function App() {
           gridTemplateColumns: "minmax(0, 1fr)",
         }}
       >
-        <DataNotRefreshedBanner />
+        <AutoRefreshStoppedBanner />
         <ErrorBanner meta={meta.data} />
         <StaleDataBanner meta={meta.data} />
         <FormulaNoticeBanner />

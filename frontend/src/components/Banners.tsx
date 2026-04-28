@@ -1,12 +1,12 @@
-import { AlertTriangle, BellRing, Clock, Info, AlertCircle } from "lucide-react";
+import { AlertTriangle, BellRing, Clock, Info, Pause } from "lucide-react";
 import { BunchingAlert, Meta } from "../types";
 
-export function DataNotRefreshedBanner() {
+export function AutoRefreshStoppedBanner() {
   return (
-    <div className="rounded-xl border border-amber-300 bg-amber-100 p-3 flex items-center gap-3 shadow-card">
-      <AlertCircle className="w-5 h-5 text-amber-700 flex-shrink-0" />
-      <div className="text-sm text-amber-900 font-semibold">
-        Data is Not Refreshed — Pipeline is disabled
+    <div className="rounded-xl border border-orange-300 bg-orange-100 p-3 flex items-center gap-3 shadow-card">
+      <Pause className="w-5 h-5 text-orange-700 flex-shrink-0" />
+      <div className="text-sm text-orange-900 font-semibold">
+        Automatic Data Refresh has been stopped — displaying last known data
       </div>
     </div>
   );
