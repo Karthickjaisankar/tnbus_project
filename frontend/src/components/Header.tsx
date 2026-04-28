@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bus as BusIcon, RefreshCw, Wifi } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../api";
+import { Bus as BusIcon } from "lucide-react";
 import { Meta } from "../types";
 
 function formatIST(iso: string | null) {
@@ -36,12 +34,6 @@ export function Header({ meta }: { meta: Meta | undefined }) {
     return () => clearInterval(t);
   }, []);
 
-  const qc = useQueryClient();
-  const refresh = useMutation({
-    mutationFn: api.refresh,
-    onSuccess: () => qc.invalidateQueries(),
-  });
-
   const istNow = now.toLocaleTimeString("en-IN", {
     timeZone: "Asia/Kolkata",
     hour: "2-digit",
@@ -68,15 +60,6 @@ export function Header({ meta }: { meta: Meta | undefined }) {
             </div>
           </div>
 
-          <button
-            onClick={() => refresh.mutate()}
-            disabled={refresh.isPending}
-            className="flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 hover:border-accent-cyan/50 hover:text-accent-cyan transition text-sm text-slate-700 disabled:opacity-50 shadow-card flex-shrink-0"
-            title="Refresh now"
-          >
-            <RefreshCw className={`w-4 h-4 ${refresh.isPending ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
         </div>
 
         <div className="mt-2 sm:mt-3 flex items-center gap-3 sm:gap-4 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0">
@@ -94,9 +77,6 @@ export function Header({ meta }: { meta: Meta | undefined }) {
             <div className="text-[10px] uppercase tracking-wider text-slate-500">IST clock</div>
             <div className="text-xs sm:text-sm font-mono text-accent-cyan font-semibold whitespace-nowrap">
               {istNow}
-            </div>
-            <div className="text-[10px] text-slate-400 flex items-center gap-1 justify-end whitespace-nowrap">
-              <Wifi className="w-3 h-3" /> 60s
             </div>
           </div>
         </div>

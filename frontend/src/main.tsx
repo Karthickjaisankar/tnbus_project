@@ -7,12 +7,13 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./index.css";
 
+// Auto-refresh stopped: data only changes on explicit reload.
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchInterval: 60_000,
+      refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 30_000,
+      staleTime: Infinity,
     },
   },
 });
