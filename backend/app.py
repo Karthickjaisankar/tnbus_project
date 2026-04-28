@@ -110,10 +110,10 @@ def refresh_pipeline(force: bool = False) -> None:
         etas = get_etas(places)
         geos = get_geocodes(places)
         
-        df = attach_arrival(df, etas, ref_time=None)
-        
         # Use current time as reference
         now = datetime.now(TZ_IST)
+        
+        df = attach_arrival(df, etas, ref_time=now)
         
         fc = arrival_forecast(
             df,
