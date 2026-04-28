@@ -6,7 +6,6 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
 
-from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -80,53 +79,39 @@ _LOCK = threading.Lock()
 def refresh_pipeline(force: bool = False) -> None:
     """Pull -> parse -> ETA -> geocode -> bucket. Mutates _STATE atomically.
 
-    When force=False (the scheduler default), skip the pipeline if the latest
-    file in Drive matches the one we already processed — prevents repeat API
-    calls between 30-min file uploads. The /api/refresh endpoint passes
-    force=True so a user-initiated refresh always re-runs.
+    Auto-scheduling has been turned off (see lifespan below). This function
+    is now invoked only once on server startup (to seed _STATE with the
+    "last known" data) and on demand via POST /api/refresh.
     """
     global _LAST_FILENAME
     print(f"[refresh] starting at {datetime.now(TZ_IST).isoformat(timespec='seconds')} (force={force})")
     try:
-        # Load last local file in data/ directory
-        from pathlib import Path
-        data_files = list(Path("data").glob("*.xlsx"))
-        if not data_files:
-            raise RuntimeError("no xlsx files in data/ directory")
-        path = sorted(data_files, key=lambda p: p.stat().st_mtime)[-1]  # Get most recently modified
-        print(f"[refresh] using local file: {path.name}")
-        
+        path = sync_latest()
+        if path is None:
+            raise RuntimeError("no source file in Drive")
+
         if not force and path.name == _LAST_FILENAME:
-            print(f"[refresh] already processed {path.name}, skipping")
+            print(f"[refresh] no new file ({path.name}), skipping")
             return
-        
-        _LAST_FILENAME = path.name
 
         df, snapshot_ts = load_snapshot(path)
         places = df["EFFECTIVE_PLACE"].unique().tolist()
-        
-        # Call Google APIs once for the last file (will use cache if available)
-        print(f"[refresh] calling Google APIs for {len(places)} places...")
         etas = get_etas(places)
         geos = get_geocodes(places)
-        
-        # Use current time as reference
+
+        # Replace TOTAL_PASSENGERS / PASSENGERS_COUNT with the corp-based
+        # estimate. Online bookings aren't in the source data, so a flat
+        # per-bus count gives MTC a more realistic planning number.
+        df["PASSENGERS_COUNT"] = df["CORPORATION"].apply(_passengers_for)
+
         now = datetime.now(TZ_IST)
-        
         df = attach_arrival(df, etas, ref_time=now)
-        
         fc = arrival_forecast(
             df,
             ref_time=now,
             hours=FORECAST_HORIZON_HOURS,
             bucket_minutes=FORECAST_BUCKET_MIN,
         )
-        
-        # Replace TOTAL_PASSENGERS / PASSENGERS_COUNT with the corp-based
-        # estimate. Online bookings aren't in the source data, so a flat
-        # per-bus count gives MTC a more realistic planning number.
-        df["PASSENGERS_COUNT"] = df["CORPORATION"].apply(_passengers_for)
-
         by_c = by_corporation(df)
 
         # Per-bus payload for map + table
@@ -134,7 +119,6 @@ def refresh_pipeline(force: bool = False) -> None:
         for _, r in df.iterrows():
             geo = geos.get(r["EFFECTIVE_PLACE"], {})
             arrival = r["ARRIVAL_DT"]
-            # ARRIVAL_DT = now + duration, so mins_to_arrive == duration.
             mins_to_arrive = float(r["DURATION_MIN"])
             buses.append({
                 "waybill": r["WAYBILLNO"],
@@ -224,6 +208,7 @@ def refresh_pipeline(force: bool = False) -> None:
                 "is_stale": is_stale,
                 "error": None,
             })
+        _LAST_FILENAME = path.name
         bunch_msg = f" BUNCHING: {bunching['buses']} buses in 15min" if bunching else ""
         print(f"[refresh] done: {len(buses)} buses, {w1} in 1h ({p1} pax), {w5} in 5h ({p5} pax){bunch_msg}")
     except Exception as e:
@@ -232,16 +217,13 @@ def refresh_pipeline(force: bool = False) -> None:
             _STATE["error"] = str(e)
 
 
-_scheduler = BackgroundScheduler(timezone=str(TZ_IST))
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Seed _STATE once at startup with whatever's currently in Drive — that's
+    # the "last known data" we'll display. NO scheduled re-runs: the auto
+    # gdrive trigger is intentionally disabled.
     refresh_pipeline()
-    _scheduler.add_job(refresh_pipeline, "interval", minutes=5, id="refresh")
-    _scheduler.start()
     yield
-    _scheduler.shutdown(wait=False)
 
 
 app = FastAPI(title="TN Bus Inflow Tracker", lifespan=lifespan)
