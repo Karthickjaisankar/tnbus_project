@@ -88,18 +88,13 @@ def refresh_pipeline(force: bool = False) -> None:
     global _LAST_FILENAME
     print(f"[refresh] starting at {datetime.now(TZ_IST).isoformat(timespec='seconds')} (force={force})")
     try:
-        path = sync_latest()
-        if path is None:
-            raise RuntimeError("no source file in Drive")
-
-        if not force and path.name == _LAST_FILENAME:
-            print(f"[refresh] no new file ({path.name}), skipping")
-            return
-
-        df, snapshot_ts = load_snapshot(path)
-        places = df["EFFECTIVE_PLACE"].unique().tolist()
-        etas = get_etas(places)
-        geos = get_geocodes(places)
+        # DISABLED: Stop reading from Google Drive to avoid API costs during testing
+        # path = sync_latest()
+        # if path is None:
+        #     raise RuntimeError("no source file in Drive")
+        
+        print("[refresh] Drive sync disabled for testing")
+        return
 
         # Replace TOTAL_PASSENGERS / PASSENGERS_COUNT with the corp-based
         # estimate. Online bookings aren't in the source data, so a flat
