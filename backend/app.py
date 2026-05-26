@@ -8,6 +8,8 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from collections import Counter
 
@@ -18,6 +20,7 @@ from .config import (
     FORECAST_HORIZON_HOURS,
     PASSENGERS_PER_BUS_OTHER,
     PASSENGERS_PER_BUS_SETC,
+    ROOT,
     STALE_DATA_THRESHOLD_MIN,
     TZ_IST,
 )
@@ -284,3 +287,25 @@ def force_refresh():
         if _STATE["error"]:
             raise HTTPException(500, _STATE["error"])
         return {"ok": True, "refreshed_at": _STATE["refreshed_at"]}
+
+
+# --- Serve the built React frontend from the same service -------------------
+# In production the Dockerfile builds frontend/dist and copies it here, so
+# FastAPI serves both the API (/api/*) and the SPA from one Railway service.
+# These routes are registered LAST so /api/* and /docs always take precedence.
+_FRONTEND_DIST = ROOT / "frontend" / "dist"
+if _FRONTEND_DIST.is_dir():
+    app.mount(
+        "/assets",
+        StaticFiles(directory=str(_FRONTEND_DIST / "assets")),
+        name="assets",
+    )
+
+    @app.get("/{full_path:path}")
+    def serve_spa(full_path: str):
+        # Serve a real static file if it exists (favicon, etc.), otherwise
+        # fall back to index.html so client-side routing works.
+        candidate = _FRONTEND_DIST / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(str(candidate))
+        return FileResponse(str(_FRONTEND_DIST / "index.html"))

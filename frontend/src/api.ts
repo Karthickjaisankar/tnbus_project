@@ -1,6 +1,10 @@
 import { Bus, CorpRow, ForecastHour, Meta } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Empty = same-origin relative requests. In production FastAPI serves both
+// the API and this bundle from one Railway service, so "/api/..." resolves
+// to the same host. In dev, the Vite proxy forwards "/api" to localhost:8000.
+// Override with VITE_API_URL only if the API is hosted separately.
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 async function get<T>(path: string): Promise<T> {
   const url = `${API_BASE}${path}`;

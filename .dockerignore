@@ -1,0 +1,27 @@
+# Python
+venv/
+**/__pycache__/
+*.pyc
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Local data / caches (regenerated at runtime)
+data/*.xlsx
+cache/*.sqlite
+cache/*.csv
+
+# Secrets (provided via Railway env vars instead)
+credentials/.env
+credentials/*.json
+
+# Misc
+.git/
+.gitignore
+.DS_Store
+.claude/
+.calude/
+scripts/
+README.md
