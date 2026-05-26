@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import io
+import json
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -16,9 +18,17 @@ SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 
 def _drive():
-    creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_JSON, scopes=SCOPES
-    )
+    # Prefer the GOOGLE_CREDENTIALS env var (Railway) — read it directly so we
+    # don't depend on a file being written at import time. Fall back to the
+    # local JSON file for dev.
+    creds_env = os.getenv("GOOGLE_CREDENTIALS")
+    if creds_env:
+        info = json.loads(creds_env)
+        creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
+    else:
+        creds = service_account.Credentials.from_service_account_file(
+            str(SERVICE_ACCOUNT_JSON), scopes=SCOPES
+        )
     return build("drive", "v3", credentials=creds, cache_discovery=False)
 
 
