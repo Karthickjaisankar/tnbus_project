@@ -45,11 +45,15 @@ GMAP_API_KEY = (_env.get("GMAP_API") or os.getenv("GMAP_API") or "").strip().str
 
 # Handle Google credentials (local file or Railway environment variable)
 if os.getenv("GOOGLE_CREDENTIALS"):
-    # Railway: load from environment variable
-    creds_json = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
-    # Write to temp location for google-auth to read
-    SERVICE_ACCOUNT_JSON.parent.mkdir(exist_ok=True)
-    with open(SERVICE_ACCOUNT_JSON, "w") as f:
-        json.dump(creds_json, f)
+    # Railway: load from environment variable. Wrapped so a malformed value
+    # can't crash the whole app at import time — the pipeline will just report
+    # an auth error instead.
+    try:
+        creds_json = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
+        SERVICE_ACCOUNT_JSON.parent.mkdir(exist_ok=True)
+        with open(SERVICE_ACCOUNT_JSON, "w") as f:
+            json.dump(creds_json, f)
+    except Exception as e:
+        print(f"[config] could not write GOOGLE_CREDENTIALS: {e}")
 CACHE_DIR.mkdir(exist_ok=True)
 DATA_DIR.mkdir(exist_ok=True)

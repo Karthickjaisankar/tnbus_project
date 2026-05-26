@@ -223,9 +223,11 @@ def refresh_pipeline(force: bool = False) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Seed _STATE once at startup with whatever's currently in Drive — that's
-    # the "last known data" we'll display. NO scheduled re-runs: the auto
-    # gdrive trigger is intentionally disabled.
-    refresh_pipeline()
+    # the "last known data" we'll display. Run it in a BACKGROUND THREAD so the
+    # server binds its port and responds immediately; the slow part (Drive +
+    # Maps calls, ~minute on a cold cache) populates _STATE when it finishes.
+    # NO scheduled re-runs: the auto gdrive trigger is intentionally disabled.
+    threading.Thread(target=refresh_pipeline, daemon=True).start()
     yield
 
 
