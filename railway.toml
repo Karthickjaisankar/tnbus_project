@@ -2,5 +2,9 @@
 builder = "DOCKERFILE"
 
 [deploy]
+# Config-as-code start command — overrides any stale dashboard "Custom Start
+# Command". Runs the Python entrypoint that reads PORT from the environment,
+# so there is no '$PORT' shell-expansion problem.
+startCommand = "python -m backend.run"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
