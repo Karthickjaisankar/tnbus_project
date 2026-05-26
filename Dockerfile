@@ -24,4 +24,5 @@ COPY --from=frontend /app/frontend/dist ./frontend/dist
 # (GOOGLE_CREDENTIALS as JSON, GMAP_API as the Maps key) — see backend/config.py.
 
 EXPOSE 8000
-CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Python reads PORT itself (no shell expansion needed — robust on Railway).
+CMD ["python", "-m", "backend.run"]
